@@ -123,27 +123,58 @@ export class FrameManager {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         
+        // Get threshold settings from UI controls
+        const thresholdStartColor = document.getElementById('threshold-start-color');
+        const colorThreshold = document.getElementById('color-threshold');
+        
+        let startR = 0, startG = 0, startB = 0;
+        let threshold = 50;
+        
+        if (thresholdStartColor && colorThreshold) {
+            const startColorHex = thresholdStartColor.value;
+            startR = parseInt(startColorHex.substr(1, 2), 16);
+            startG = parseInt(startColorHex.substr(3, 2), 16);
+            startB = parseInt(startColorHex.substr(5, 2), 16);
+            threshold = parseInt(colorThreshold.value, 10);
+        }
+        
         for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
             const alpha = data[i + 3];
             
-            // Convert to grayscale for intensity
-            const gray = (r * 0.299 + g * 0.587 + b * 0.114);
-            
             if (isScrambled) {
-                // Red channel for scrambled content
+                // Red channel for scrambled content (unchanged)
+                const gray = (r * 0.299 + g * 0.587 + b * 0.114);
                 data[i] = gray;     // Red
                 data[i + 1] = 0;    // Green
                 data[i + 2] = 0;    // Blue
                 data[i + 3] = alpha; // Alpha
             } else {
-                // Cyan channel for hidden content
-                data[i] = 0;        // Red
-                data[i + 1] = gray; // Green
-                data[i + 2] = gray; // Blue
-                data[i + 3] = alpha; // Alpha
+                // Calculate color distance from start color
+                const colorDistance = Math.sqrt(
+                    Math.pow(r - startR, 2) + 
+                    Math.pow(g - startG, 2) + 
+                    Math.pow(b - startB, 2)
+                );
+                const maxDistance = Math.sqrt(255 * 255 * 3); // Maximum possible distance
+                const distancePercent = (colorDistance / maxDistance) * 100;
+                
+                if (distancePercent <= threshold) {
+                    // Close to start color - convert to cyan
+                    const gray = (r * 0.299 + g * 0.587 + b * 0.114);
+                    data[i] = 0;        // Red
+                    data[i + 1] = gray; // Green
+                    data[i + 2] = gray; // Blue
+                    data[i + 3] = alpha; // Alpha
+                } else {
+                    // Far from start color - convert to random noise
+                    data[i] = Math.floor(Math.random() * 256);     // Random red
+                    data[i + 1] = Math.floor(Math.random() * 256); // Random green
+                    data[i + 2] = Math.floor(Math.random() * 256); // Random blue
+                    data[i + 3] = alpha; // Keep original alpha
+                }
             }
         }
         

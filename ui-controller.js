@@ -43,8 +43,25 @@ export class UIController {
                 if (this.onSettingsChange) {
                     this.onSettingsChange();
                 }
+                
+                // Trigger reprocessing of images when threshold settings change
+                if (key === 'thresholdStartColor' || key === 'colorThreshold') {
+                    this.reprocessFrameImages();
+                }
             });
         }
+    }
+
+    reprocessFrameImages() {
+        // Trigger reprocessing of all frame images
+        const frameItems = document.querySelectorAll('.frame-item');
+        frameItems.forEach(frameItem => {
+            const hiddenImageInput = frameItem.querySelector('.hidden-image-input');
+            if (hiddenImageInput && hiddenImageInput.files[0]) {
+                // Trigger change event to reprocess the image
+                hiddenImageInput.dispatchEvent(new Event('change'));
+            }
+        });
     }
 
     setOnSettingsChange(callback) {
