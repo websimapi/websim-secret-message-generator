@@ -77,7 +77,9 @@ export class GifGenerator {
                     }
                     
                     // Draw scrambled image with red filter
-                    if (frameData.scrambledImage) {
+                    if (frameData.scrambledImageFrames && frameData.scrambledImageFrames.length > 0) {
+                        await this.drawImageWithColorFilter(ctx, null, this.controls.scrambledColor.value, x, y, null, frameData.scrambledImageFrames);
+                    } else if (frameData.scrambledImage) {
                         await this.drawImageWithColorFilter(ctx, frameData.scrambledImage, this.controls.scrambledColor.value, x, y, frameData.processedScrambledImage);
                     }
 
@@ -93,7 +95,9 @@ export class GifGenerator {
                     }
                     
                     // Draw hidden image with cyan filter
-                    if (frameData.hiddenImage) {
+                    if (frameData.hiddenImageFrames && frameData.hiddenImageFrames.length > 0) {
+                        await this.drawImageWithColorFilter(ctx, null, this.controls.hiddenColor.value, x + offsetX, y + offsetY, null, frameData.hiddenImageFrames);
+                    } else if (frameData.hiddenImage) {
                         await this.drawImageWithColorFilter(ctx, frameData.hiddenImage, this.controls.hiddenColor.value, x + offsetX, y + offsetY, frameData.processedHiddenImage);
                     }
 
@@ -130,9 +134,20 @@ export class GifGenerator {
         gif.render();
     }
 
-    async drawImageWithColorFilter(ctx, imageFile, color, x, y, processedCanvas = null) {
+    async drawImageWithColorFilter(ctx, imageFile, color, x, y, processedCanvas = null, gifFrames = null) {
         return new Promise((resolve) => {
-            if (processedCanvas) {
+            if (gifFrames && gifFrames.length > 0) {
+                // Use the first frame of the GIF frames
+                const frame = gifFrames[0];
+                const maxWidth = ctx.canvas.width - x;
+                const maxHeight = ctx.canvas.height - y;
+                const scale = Math.min(maxWidth / frame.canvas.width, maxHeight / frame.canvas.height, 1);
+                const scaledWidth = frame.canvas.width * scale;
+                const scaledHeight = frame.canvas.height * scale;
+                
+                ctx.drawImage(frame.canvas, x, y, scaledWidth, scaledHeight);
+                resolve();
+            } else if (processedCanvas) {
                 // Use the pre-processed 2-bit color canvas
                 const maxWidth = ctx.canvas.width - x;
                 const maxHeight = ctx.canvas.height - y;

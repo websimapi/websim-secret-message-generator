@@ -157,13 +157,21 @@ class App {
         const existingImages = this.outputContainer.querySelectorAll('.output-image');
         existingImages.forEach(img => img.remove());
 
-        // Add scrambled image
-        if (frameData.scrambledImage && frameData.processedScrambledImage) {
+        // Add scrambled image - handle both single images and GIF frames
+        if (frameData.scrambledImageFrames && frameData.scrambledImageFrames.length > 0) {
+            // For GIF frames, show the first frame (could be enhanced to cycle through frames)
+            const currentGifFrame = frameData.scrambledImageFrames[0];
+            this.displayProcessedImage(currentGifFrame.canvas, 'scrambled');
+        } else if (frameData.scrambledImage && frameData.processedScrambledImage) {
             this.displayProcessedImage(frameData.processedScrambledImage, 'scrambled');
         }
 
-        // Add hidden image
-        if (frameData.hiddenImage && frameData.processedHiddenImage) {
+        // Add hidden image - handle both single images and GIF frames
+        if (frameData.hiddenImageFrames && frameData.hiddenImageFrames.length > 0) {
+            // For GIF frames, show the first frame (could be enhanced to cycle through frames)
+            const currentGifFrame = frameData.hiddenImageFrames[0];
+            this.displayProcessedImage(currentGifFrame.canvas, 'hidden');
+        } else if (frameData.hiddenImage && frameData.processedHiddenImage) {
             this.displayProcessedImage(frameData.processedHiddenImage, 'hidden');
         }
     }
