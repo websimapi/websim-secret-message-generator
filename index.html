@@ -57,18 +57,18 @@
                         <label for="hidden-offset-y">Offset Y: <span id="hidden-offset-y-value">0</span>px</label>
                         <input type="range" id="hidden-offset-y" min="-10" max="10" value="0" step="1">
                     </div>
+                    <div class="setting-item">
+                        <label for="threshold-start-color">Threshold Start Color</label>
+                        <input type="color" id="threshold-start-color" value="#000000">
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="color-threshold">Color Threshold: <span id="color-threshold-value">50</span>%</label>
+                        <input type="range" id="color-threshold" min="0" max="100" value="50" step="1">
+                    </div>
                 </fieldset>
 
                 <fieldset class="fieldset-span-2">
                     <legend>General Text</legend>
-                    <div class="setting-item">
-                        <label for="font-family">Font Family</label>
-                        <select id="font-family"></select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="custom-font-input">Upload Custom Font</label>
-                        <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" class="font-upload-input">
-                    </div>
                     <div class="setting-item range-item">
                         <label for="font-size">Font Size: <span id="font-size-value">24</span>px</label>
                         <input type="range" id="font-size" min="8" max="72" value="24" step="1">
@@ -116,34 +116,10 @@
                         <label for="gif-fps">Animation FPS: <span id="gif-fps-value">5</span></label>
                         <input type="range" id="gif-fps" min="1" max="30" value="5" step="1">
                     </div>
-                    <div class="setting-item range-item">
-                        <label for="dialogue-fps">Dialogue Typing Speed (chars/sec): <span id="dialogue-fps-value">15</span></label>
-                        <input type="range" id="dialogue-fps" min="1" max="50" value="15" step="1">
-                    </div>
                     <div class="gif-controls">
-                        <button id="play-pause-animation" title="Preview animation">Play</button>
-                        <button id="generate-gif-btn" title="Generate and download a GIF of the animation">Generate & Download GIF</button>
+                        <button id="play-pause-animation">Play</button>
+                        <button id="generate-gif-btn">Generate & Download GIF</button>
                         <span id="gif-status"></span>
-                    </div>
-                </fieldset>
-
-                <fieldset class="fieldset-span-2">
-                    <legend>AI Scene Generation</legend>
-                    <div class="setting-item" style="flex-direction: column; align-items: stretch; grid-column: span 2;">
-                        <label for="ai-prompt">Describe the scene to hide your message in:</label>
-                        <textarea id="ai-prompt" rows="3" placeholder="e.g., A dense jungle, a futuristic cityscape at night, an abstract painting..."></textarea>
-                    </div>
-                    <div class="setting-item range-item" style="grid-column: span 2;">
-                        <label for="ai-preserve-percentage">Text Preservation Strength: <span id="ai-preserve-percentage-value">100</span>%</label>
-                        <input type="range" id="ai-preserve-percentage" min="50" max="100" value="100" step="1" title="Controls how strictly the AI must preserve the original text art. 100% is exact preservation. Lower values allow for stylistic changes.">
-                    </div>
-                    <div class="ai-controls">
-                        <button id="generate-ai-scene-btn">Generate Scene from Current Frame</button>
-                        <span id="ai-status"></span>
-                    </div>
-                    <div id="ai-result-container" style="display: none;">
-                        <img id="ai-result-img" src="" alt="AI Generated Scene">
-                        <button id="apply-ai-scene-btn">Apply as Background</button>
                     </div>
                 </fieldset>
             </div>
@@ -157,11 +133,9 @@
     </div>
     <script src="noise-generator.js" type="module"></script>
     <script src="text-scrambler.js" type="module"></script>
-    <script src="canvas-renderer.js" type="module"></script>
     <script src="frame-manager.js" type="module"></script>
     <script src="animation-controller.js" type="module"></script>
     <script src="gif-generator.js" type="module"></script>
-    <script src="ai-generator.js" type="module"></script>
     <script src="ui-controller.js" type="module"></script>
     <script src="main.js" type="module"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

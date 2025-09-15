@@ -9,8 +9,8 @@ export class UIController {
         this.outputContainer = document.getElementById('output-container');
         this.noiseCanvas = document.getElementById('noise-canvas');
 
-        this.setupEventListeners();
         this.populateSelects();
+        this.setupEventListeners();
     }
 
     populateSelects() {
