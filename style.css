@@ -75,6 +75,9 @@ textarea:focus {
     border-radius: 4px;
     min-height: 200px;
     user-select: none;
+    background-image: url('noise-texture.png');
+    background-size: auto;
+    background-repeat: repeat;
 }
 
 .output-text {
@@ -92,7 +95,7 @@ textarea:focus {
 
 #output-scrambled {
     color: #ff0000; /* Red */
-    mix-blend-mode: darken;
+    mix-blend-mode: lighten;
 }
 
 #output-hidden {
