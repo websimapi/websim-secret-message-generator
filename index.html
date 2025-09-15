@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Message Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Secret Message Generator</h1>
+            <p>Type in the boxes below. Use the red magnifying glass to reveal the hidden message!</p>
+        </header>
+
+        <div class="input-container">
+            <div class="input-group">
+                <label for="scrambled-input">Scrambled Text (Red)</label>
+                <textarea id="scrambled-input" rows="5">THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.</textarea>
+            </div>
+            <div class="input-group">
+                <label for="hidden-input">Hidden Message (Cyan)</label>
+                <textarea id="hidden-input" rows="5">THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!</textarea>
+            </div>
+        </div>
+
+        <div id="output-container">
+            <div id="output-scrambled" class="output-text"></div>
+            <div id="output-hidden" class="output-text"></div>
+        </div>
+
+        <div id="decoder">
+            <div class="decoder-lens"></div>
+            <div class="decoder-handle"></div>
+        </div>
+    </div>
+    <script src="script.js" type="module"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+

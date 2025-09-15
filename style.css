@@ -1,0 +1,135 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: #1a1a1a;
+    margin-bottom: 5px;
+}
+
+.input-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+#output-container {
+    position: relative;
+    background-color: #ffffff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 200px;
+    user-select: none;
+}
+
+.output-text {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    letter-spacing: 2px;
+}
+
+#output-scrambled {
+    color: #ff0000; /* Red */
+}
+
+#output-hidden {
+    color: #00ffff; /* Cyan */
+}
+
+#decoder {
+    position: fixed;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    cursor: move;
+    z-index: 100;
+    user-select: none;
+    pointer-events: none; /* Pass events through the main container */
+}
+
+#decoder .decoder-lens {
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 0, 0, 0.5);
+    border: 5px solid rgb(200, 0, 0);
+    border-radius: 50%;
+    pointer-events: auto; /* Capture events on the lens */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+#decoder .decoder-handle {
+    width: 25px;
+    height: 80px;
+    background: #6b3e2e;
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform-origin: top left;
+    transform: rotate(45deg) translate(-10px, -15px);
+    border-radius: 10px;
+    border: 3px solid #4a2b1f;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+}
+
