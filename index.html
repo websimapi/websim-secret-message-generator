@@ -91,11 +91,23 @@
                         <label for="noise-opacity">Noise Opacity: <span id="noise-opacity-value">1.0</span></label>
                         <input type="range" id="noise-opacity" min="0" max="1" value="1" step="0.05">
                     </div>
+                    <div class="setting-item">
+                        <label for="noise-type">Noise Type</label>
+                        <select id="noise-type">
+                            <option value="color" selected>Color</option>
+                            <option value="grayscale">Grayscale</option>
+                        </select>
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="noise-scale">Noise Scale: <span id="noise-scale-value">1</span>px</label>
+                        <input type="range" id="noise-scale" min="1" max="10" value="1" step="1">
+                    </div>
                 </fieldset>
             </div>
         </div>
 
         <div id="output-container">
+            <canvas id="noise-canvas"></canvas>
             <div id="output-scrambled" class="output-text"></div>
             <div id="output-hidden" class="output-text"></div>
         </div>

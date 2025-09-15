@@ -3,6 +3,8 @@ const hiddenInput = document.getElementById('hidden-input');
 const scrambledOutput = document.getElementById('output-scrambled');
 const hiddenOutput = document.getElementById('output-hidden');
 const outputContainer = document.getElementById('output-container');
+const noiseCanvas = document.getElementById('noise-canvas');
+const noiseCtx = noiseCanvas.getContext('2d');
 
 // --- Settings Elements ---
 const controls = {
@@ -18,6 +20,8 @@ const controls = {
     lineHeight: document.getElementById('line-height'),
     bgColor: document.getElementById('bg-color'),
     noiseOpacity: document.getElementById('noise-opacity'),
+    noiseType: document.getElementById('noise-type'),
+    noiseScale: document.getElementById('noise-scale'),
 };
 
 const valueDisplays = {
@@ -28,6 +32,7 @@ const valueDisplays = {
     letterSpacing: document.getElementById('letter-spacing-value'),
     lineHeight: document.getElementById('line-height-value'),
     noiseOpacity: document.getElementById('noise-opacity-value'),
+    noiseScale: document.getElementById('noise-scale-value'),
 };
 
 const blendModes = [
@@ -51,6 +56,31 @@ function populateSelect(selectElement, options, selectedValue) {
 function updateOutput() {
     scrambledOutput.textContent = scrambledInput.value;
     hiddenOutput.textContent = hiddenInput.value;
+}
+
+function generateNoise() {
+    const scale = parseInt(controls.noiseScale.value, 10);
+    const type = controls.noiseType.value;
+    const w = noiseCanvas.width;
+    const h = noiseCanvas.height;
+
+    noiseCtx.clearRect(0, 0, w, h);
+
+    for (let y = 0; y < h; y += scale) {
+        for (let x = 0; x < w; x += scale) {
+            let r, g, b;
+            if (type === 'color') {
+                r = Math.floor(Math.random() * 256);
+                g = Math.floor(Math.random() * 256);
+                b = Math.floor(Math.random() * 256);
+            } else { // grayscale
+                const val = Math.floor(Math.random() * 256);
+                r = g = b = val;
+            }
+            noiseCtx.fillStyle = `rgb(${r},${g},${b})`;
+            noiseCtx.fillRect(x, y, scale, scale);
+        }
+    }
 }
 
 function updateStyles() {
@@ -83,7 +113,7 @@ function updateStyles() {
     // Background
     const noiseOpacity = controls.noiseOpacity.value;
     outputContainer.style.backgroundColor = controls.bgColor.value;
-    outputContainer.style.backgroundImage = `linear-gradient(rgba(255,255,255, ${1-noiseOpacity}), rgba(255,255,255, ${1-noiseOpacity})), url('noise-texture.png')`;
+    noiseCanvas.style.opacity = noiseOpacity;
 
     // Update value displays
     for (const key in valueDisplays) {
@@ -91,6 +121,9 @@ function updateStyles() {
             valueDisplays[key].textContent = controls[key].value;
         }
     }
+    
+    // Regenerate noise if noise-related settings changed
+    generateNoise();
 }
 
 function setup() {
@@ -106,8 +139,24 @@ function setup() {
         controls[key].addEventListener('input', updateStyles);
     }
     
+    // Resize observer for the output container
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const { width, height } = entry.contentRect;
+            noiseCanvas.width = width;
+            noiseCanvas.height = height;
+            updateStyles(); // Regenerate noise and update everything
+        }
+    });
+
+    resizeObserver.observe(outputContainer);
+    
     // Initial render
     updateOutput();
+    // Initial size setup
+    const initialRect = outputContainer.getBoundingClientRect();
+    noiseCanvas.width = initialRect.width;
+    noiseCanvas.height = initialRect.height;
     updateStyles();
 }
 

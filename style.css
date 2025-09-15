@@ -125,10 +125,20 @@ textarea:focus {
     border-radius: 4px;
     min-height: 200px;
     user-select: none;
-    background-image: url('noise-texture.png');
     background-size: auto;
     background-repeat: repeat;
     transition: background-color 0.2s ease;
+    overflow: hidden;
+}
+
+#noise-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
 .output-text {
