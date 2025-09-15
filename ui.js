@@ -86,10 +86,10 @@ export function updateFrameNumbers() {
     });
 }
 
-export function createFrameElement(frameId) {
+export function createFrameElement(frameData) {
     const item = document.createElement('div');
     item.className = 'frame-item';
-    item.dataset.id = frameId;
+    item.dataset.id = frameData.id;
 
     item.innerHTML = `
         <div class="frame-item-header">
@@ -102,7 +102,7 @@ export function createFrameElement(frameId) {
                     <span>Scrambled Text (Red)</span>
                     <div class="auto-scramble-toggle" title="Automatically generate scrambled text based on the hidden message.">
                         <span>Auto-scramble</span>
-                        <input type="checkbox" class="auto-scramble-toggle-cb" checked>
+                        <input type="checkbox" class="auto-scramble-toggle-cb">
                     </div>
                 </label>
                 <textarea class="scrambled-input" rows="4"></textarea>
@@ -113,6 +113,11 @@ export function createFrameElement(frameId) {
             </div>
         </div>
     `;
+
+    // Populate the new element with frame data
+    item.querySelector('.scrambled-input').value = frameData.scrambled;
+    item.querySelector('.hidden-input').value = frameData.hidden;
+    item.querySelector('.auto-scramble-toggle-cb').checked = frameData.autoScramble;
 
     elements.framesList.appendChild(item);
     updateFrameNumbers();

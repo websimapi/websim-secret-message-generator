@@ -12,7 +12,11 @@ function onFrameDataChange() {
 function setupEventListeners() {
     ui.elements.addFrameBtn.addEventListener('click', () => {
         const newFrame = state.addFrame();
-        ui.createFrameElement(newFrame.id);
+        // Generate initial scrambled text if auto is on
+        if (newFrame.autoScramble) {
+            newFrame.scrambled = ui.generateScrambledText(newFrame.hidden);
+        }
+        ui.createFrameElement(newFrame);
         onFrameDataChange();
     });
 
@@ -35,7 +39,8 @@ function initialize() {
         'THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!',
         true
     );
-    ui.createFrameElement(initialFrame.id);
+    // The initial scrambled text is already set, so we just create the UI
+    ui.createFrameElement(initialFrame);
     
     // Initial render
     const initialRect = ui.elements.outputContainer.getBoundingClientRect();
