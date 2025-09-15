@@ -16,18 +16,12 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
     <div id="app">
-        <div class="input-container">
-            <div class="input-group">
-                <label for="scrambled-input">Scrambled Text (Red)</label>
-                <textarea id="scrambled-input" rows="5">THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.</textarea>
+        <div id="frames-container">
+            <h3>Message Frames</h3>
+            <div id="frames-list">
+                <!-- JS will populate this -->
             </div>
-            <div class="input-group">
-                <label>Hidden Messages (Cyan)</label>
-                <div id="hidden-messages-list">
-                    <!-- JS will populate this -->
-                </div>
-                <button id="add-hidden-message">+ Add Message</button>
-            </div>
+            <button id="add-frame-btn">+ Add Frame</button>
         </div>
 
         <div id="settings-container">

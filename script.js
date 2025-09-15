@@ -1,6 +1,8 @@
 const scrambledInput = document.getElementById('scrambled-input');
 const hiddenMessagesList = document.getElementById('hidden-messages-list');
 const addHiddenMessageBtn = document.getElementById('add-hidden-message');
+const framesList = document.getElementById('frames-list');
+const addFrameBtn = document.getElementById('add-frame-btn');
 const scrambledOutput = document.getElementById('output-scrambled');
 const hiddenOutput = document.getElementById('output-hidden');
 const outputContainer = document.getElementById('output-container');
@@ -67,41 +69,97 @@ function populateSelect(selectElement, options, selectedValue) {
     });
 }
 
-function getHiddenMessages() {
-    return Array.from(hiddenMessagesList.querySelectorAll('textarea')).map(ta => ta.value);
+function getFramesData() {
+    return Array.from(framesList.querySelectorAll('.frame-item')).map(item => {
+        const scrambledInput = item.querySelector('.scrambled-input');
+        const hiddenInput = item.querySelector('.hidden-input');
+        return {
+            scrambled: scrambledInput ? scrambledInput.value : '',
+            hidden: hiddenInput ? hiddenInput.value : ''
+        };
+    });
+}
+
+function updateFrameNumbers() {
+    const frameItems = framesList.querySelectorAll('.frame-item');
+    frameItems.forEach((item, index) => {
+        const header = item.querySelector('h4');
+        if (header) {
+            header.textContent = `Frame ${index + 1}`;
+        }
+    });
 }
 
 function updateOutput() {
-    scrambledOutput.textContent = scrambledInput.value;
-    const messages = getHiddenMessages();
-    if (messages.length > 0) {
-        hiddenOutput.textContent = messages[animationState.currentFrame % messages.length] || '';
+    const frames = getFramesData();
+    if (frames.length > 0) {
+        const currentFrameData = frames[animationState.currentFrame % frames.length];
+        scrambledOutput.textContent = currentFrameData.scrambled;
+        hiddenOutput.textContent = currentFrameData.hidden || '';
     } else {
+        scrambledOutput.textContent = '';
         hiddenOutput.textContent = '';
     }
 }
 
-function createHiddenMessageInput(value = '') {
+function createFrameInput(scrambled = '', hidden = '') {
     const item = document.createElement('div');
-    item.className = 'hidden-message-item';
+    item.className = 'frame-item';
 
-    const textarea = document.createElement('textarea');
-    textarea.rows = 2;
-    textarea.value = value;
-    textarea.addEventListener('input', updateOutput);
+    const header = document.createElement('div');
+    header.className = 'frame-item-header';
+
+    const title = document.createElement('h4');
+    // Title will be set by updateFrameNumbers
 
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'remove-message';
-    removeBtn.textContent = 'X';
+    removeBtn.className = 'remove-frame-btn';
+    removeBtn.textContent = 'Remove';
     removeBtn.addEventListener('click', () => {
         item.remove();
-        stopAnimation(); // Stop animation if messages change
+        stopAnimation();
         updateOutput();
+        updateFrameNumbers();
     });
+    
+    header.appendChild(title);
+    header.appendChild(removeBtn);
 
-    item.appendChild(textarea);
-    item.appendChild(removeBtn);
-    hiddenMessagesList.appendChild(item);
+    const inputsDiv = document.createElement('div');
+    inputsDiv.className = 'frame-inputs';
+
+    const scrambledGroup = document.createElement('div');
+    scrambledGroup.className = 'input-group';
+    const scrambledLabel = document.createElement('label');
+    scrambledLabel.textContent = 'Scrambled Text (Red)';
+    const scrambledTextarea = document.createElement('textarea');
+    scrambledTextarea.className = 'scrambled-input';
+    scrambledTextarea.rows = 4;
+    scrambledTextarea.value = scrambled;
+    scrambledTextarea.addEventListener('input', updateOutput);
+    scrambledGroup.appendChild(scrambledLabel);
+    scrambledGroup.appendChild(scrambledTextarea);
+
+    const hiddenGroup = document.createElement('div');
+    hiddenGroup.className = 'input-group';
+    const hiddenLabel = document.createElement('label');
+    hiddenLabel.textContent = 'Hidden Message (Cyan)';
+    const hiddenTextarea = document.createElement('textarea');
+    hiddenTextarea.className = 'hidden-input';
+    hiddenTextarea.rows = 4;
+    hiddenTextarea.value = hidden;
+    hiddenTextarea.addEventListener('input', updateOutput);
+    hiddenGroup.appendChild(hiddenLabel);
+    hiddenGroup.appendChild(hiddenTextarea);
+
+    inputsDiv.appendChild(scrambledGroup);
+    inputsDiv.appendChild(hiddenGroup);
+
+    item.appendChild(header);
+    item.appendChild(inputsDiv);
+    
+    framesList.appendChild(item);
+    updateFrameNumbers();
 }
 
 function generateNoise() {
@@ -181,8 +239,8 @@ function toggleAnimation() {
 }
 
 function startAnimation() {
-    const messages = getHiddenMessages();
-    if (messages.length <= 1) return;
+    const frames = getFramesData();
+    if (frames.length <= 1) return;
 
     animationState.isPlaying = true;
     playPauseBtn.textContent = 'Pause';
@@ -191,7 +249,7 @@ function startAnimation() {
     const delay = 1000 / fps;
 
     animationState.intervalId = setInterval(() => {
-        animationState.currentFrame = (animationState.currentFrame + 1) % messages.length;
+        animationState.currentFrame = (animationState.currentFrame + 1) % frames.length;
         updateOutput();
     }, delay);
 }
@@ -211,9 +269,9 @@ async function generateGif() {
     playPauseBtn.disabled = true;
     gifStatusEl.textContent = 'Initializing...';
     
-    const messages = getHiddenMessages();
-    if (messages.length === 0) {
-        gifStatusEl.textContent = 'Add at least one hidden message.';
+    const frames = getFramesData();
+    if (frames.length === 0) {
+        gifStatusEl.textContent = 'Add at least one frame.';
         generateGifBtn.disabled = false;
         playPauseBtn.disabled = false;
         return;
@@ -239,9 +297,7 @@ async function generateGif() {
     offscreenCanvas.height = height;
     const ctx = offscreenCanvas.getContext('2d');
 
-    const scrambledText = scrambledInput.value;
-
-    function drawFrame(hiddenText) {
+    function drawFrame(frameData) {
         return new Promise(resolve => {
             // This timeout allows the DOM to potentially catch up, but main logic is canvas-based
             setTimeout(() => {
@@ -280,23 +336,23 @@ async function generateGif() {
                 // Draw Scrambled Text
                 ctx.globalCompositeOperation = controls.scrambledBlendMode.value;
                 ctx.fillStyle = controls.scrambledColor.value;
-                drawText(scrambledText, x, y, lineHeight);
+                drawText(frameData.scrambled, x, y, lineHeight);
 
                 // Draw Hidden Text
                 ctx.globalCompositeOperation = controls.hiddenBlendMode.value;
                 ctx.fillStyle = controls.hiddenColor.value;
                 const offsetX = parseInt(controls.hiddenOffsetX.value, 10);
                 const offsetY = parseInt(controls.hiddenOffsetY.value, 10);
-                drawText(hiddenText, x + offsetX, y + offsetY, lineHeight);
+                drawText(frameData.hidden, x + offsetX, y + offsetY, lineHeight);
 
                 resolve(ctx);
             }, 50); // Small delay to help rendering pipeline
         });
     }
 
-    for (let i = 0; i < messages.length; i++) {
-        gifStatusEl.textContent = `Rendering frame ${i + 1}/${messages.length}...`;
-        const frameCtx = await drawFrame(messages[i]);
+    for (let i = 0; i < frames.length; i++) {
+        gifStatusEl.textContent = `Rendering frame ${i + 1}/${frames.length}...`;
+        const frameCtx = await drawFrame(frames[i]);
         gif.addFrame(frameCtx, { delay: delay, copy: true });
     }
 
@@ -330,8 +386,7 @@ function setup() {
     populateSelect(controls.hiddenBlendMode, blendModes, 'darken');
 
     // Add event listeners
-    scrambledInput.addEventListener('input', updateOutput);
-    addHiddenMessageBtn.addEventListener('click', () => createHiddenMessageInput());
+    addFrameBtn.addEventListener('click', () => createFrameInput());
 
     for (const key in controls) {
         controls[key].addEventListener('input', () => {
@@ -359,7 +414,10 @@ function setup() {
     resizeObserver.observe(outputContainer);
     
     // Initial setup
-    createHiddenMessageInput('THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!');
+    createFrameInput(
+        'THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.',
+        'THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!'
+    );
     updateOutput();
     // Initial size setup
     const initialRect = outputContainer.getBoundingClientRect();
