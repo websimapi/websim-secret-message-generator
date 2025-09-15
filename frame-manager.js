@@ -1,12 +1,9 @@
-export class FrameManager {
-    constructor() {
-        this.framesList = document.getElementById('frames-list');
-        this.addFrameBtn = document.getElementById('add-frame-btn');
-        this.onFramesChange = null;
-    }
+import { generateScrambledText } from './text-scrambler.js';
 
-    init() {
-        this.addFrameBtn.addEventListener('click', () => this.createFrame());
+export class FrameManager {
+    constructor(framesList, onFrameChange) {
+        this.framesList = framesList;
+        this.onFrameChange = onFrameChange;
     }
 
     getFramesData() {
@@ -30,34 +27,7 @@ export class FrameManager {
         });
     }
 
-    highlightFrame(frameIndex) {
-        document.querySelectorAll('.frame-item').forEach((item, index) => {
-            item.style.borderColor = index === frameIndex ? '#007bff' : '#ddd';
-        });
-    }
-
-    clearHighlight() {
-        document.querySelectorAll('.frame-item').forEach(item => {
-            item.style.borderColor = '#ddd';
-        });
-    }
-
-    generateScrambledText(sourceText) {
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let result = '';
-        for (let i = 0; i < sourceText.length; i++) {
-            const char = sourceText[i];
-            if (/[a-zA-Z]/.test(char)) {
-                const randomChar = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                result += (char === char.toUpperCase()) ? randomChar : randomChar.toLowerCase();
-            } else {
-                result += char;
-            }
-        }
-        return result;
-    }
-
-    createFrame(scrambled = '', hidden = '') {
+    createFrameInput(scrambled = '', hidden = '') {
         const item = document.createElement('div');
         item.className = 'frame-item';
 
@@ -65,12 +35,14 @@ export class FrameManager {
         header.className = 'frame-item-header';
 
         const title = document.createElement('h4');
+        // Title will be set by updateFrameNumbers
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-frame-btn';
         removeBtn.textContent = 'Remove';
         removeBtn.addEventListener('click', () => {
             item.remove();
-            if (this.onFramesChange) this.onFramesChange();
+            this.onFrameChange('remove');
             this.updateFrameNumbers();
         });
         
@@ -80,26 +52,8 @@ export class FrameManager {
         const inputsDiv = document.createElement('div');
         inputsDiv.className = 'frame-inputs';
 
-        const scrambledGroup = this.createScrambledInputGroup(scrambled);
-        const hiddenGroup = this.createHiddenInputGroup(hidden);
-
-        inputsDiv.appendChild(scrambledGroup);
-        inputsDiv.appendChild(hiddenGroup);
-
-        item.appendChild(header);
-        item.appendChild(inputsDiv);
-        
-        this.framesList.appendChild(item);
-        this.updateFrameNumbers();
-
-        // Setup auto-scramble functionality
-        this.setupAutoScramble(scrambledGroup, hiddenGroup);
-    }
-
-    createScrambledInputGroup(scrambled) {
         const scrambledGroup = document.createElement('div');
         scrambledGroup.className = 'input-group';
-        
         const scrambledLabel = document.createElement('label');
         scrambledLabel.className = 'has-toggle';
         scrambledLabel.innerHTML = '<span>Scrambled Text (Red)</span>';
@@ -107,7 +61,6 @@ export class FrameManager {
         const toggleContainer = document.createElement('div');
         toggleContainer.className = 'auto-scramble-toggle';
         toggleContainer.title = 'Automatically generate scrambled text based on the hidden message.';
-        
         const toggleLabel = document.createElement('span');
         toggleLabel.textContent = 'Auto-scramble';
         const toggleCheckbox = document.createElement('input');
@@ -123,56 +76,50 @@ export class FrameManager {
         scrambledTextarea.rows = 4;
         scrambledTextarea.value = scrambled;
         scrambledTextarea.addEventListener('input', () => {
-            toggleCheckbox.checked = false;
-            if (this.onFramesChange) this.onFramesChange();
+            toggleCheckbox.checked = false; // Disable auto-scramble on manual edit
+            this.onFrameChange('update');
         });
-
         scrambledGroup.appendChild(scrambledLabel);
         scrambledGroup.appendChild(scrambledTextarea);
-        
-        return scrambledGroup;
-    }
 
-    createHiddenInputGroup(hidden) {
         const hiddenGroup = document.createElement('div');
         hiddenGroup.className = 'input-group';
-        
         const hiddenLabel = document.createElement('label');
         hiddenLabel.textContent = 'Hidden Message (Cyan)';
-        
         const hiddenTextarea = document.createElement('textarea');
         hiddenTextarea.className = 'hidden-input';
         hiddenTextarea.rows = 4;
         hiddenTextarea.value = hidden;
-
-        hiddenGroup.appendChild(hiddenLabel);
-        hiddenGroup.appendChild(hiddenTextarea);
-        
-        return hiddenGroup;
-    }
-
-    setupAutoScramble(scrambledGroup, hiddenGroup) {
-        const toggleCheckbox = scrambledGroup.querySelector('input[type="checkbox"]');
-        const scrambledTextarea = scrambledGroup.querySelector('textarea');
-        const hiddenTextarea = hiddenGroup.querySelector('textarea');
-
         hiddenTextarea.addEventListener('input', () => {
             if (toggleCheckbox.checked) {
-                scrambledTextarea.value = this.generateScrambledText(hiddenTextarea.value);
+                scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
             }
-            if (this.onFramesChange) this.onFramesChange();
+            this.onFrameChange('update');
         });
+        hiddenGroup.appendChild(hiddenLabel);
+        hiddenGroup.appendChild(hiddenTextarea);
 
         toggleCheckbox.addEventListener('change', () => {
             if (toggleCheckbox.checked) {
-                scrambledTextarea.value = this.generateScrambledText(hiddenTextarea.value);
-                if (this.onFramesChange) this.onFramesChange();
+                // Re-enable and generate
+                scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
+                this.onFrameChange('update');
             }
         });
 
         // Initial generation if needed
-        if (toggleCheckbox.checked && hiddenTextarea.value.length > 0) {
-            scrambledTextarea.value = this.generateScrambledText(hiddenTextarea.value);
+        if (toggleCheckbox.checked && hidden.length > 0) {
+            scrambledTextarea.value = generateScrambledText(hidden);
         }
+
+        inputsDiv.appendChild(scrambledGroup);
+        inputsDiv.appendChild(hiddenGroup);
+
+        item.appendChild(header);
+        item.appendChild(inputsDiv);
+        
+        this.framesList.appendChild(item);
+        this.updateFrameNumbers();
+        this.onFrameChange('add');
     }
 }
