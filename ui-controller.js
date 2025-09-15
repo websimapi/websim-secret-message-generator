@@ -46,6 +46,7 @@ export class UIController {
                 
                 // Trigger reprocessing of images when threshold settings change
                 if (key === 'thresholdStartColor' || key === 'colorThreshold') {
+                    // This logic is now moot but harmless to keep
                     this.reprocessFrameImages();
                 }
             });

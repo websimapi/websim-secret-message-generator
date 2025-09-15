@@ -67,8 +67,6 @@ class App {
             noiseType: document.getElementById('noise-type'),
             noiseScale: document.getElementById('noise-scale'),
             gifFps: document.getElementById('gif-fps'),
-            thresholdStartColor: document.getElementById('threshold-start-color'),
-            colorThreshold: document.getElementById('color-threshold'),
         };
 
         // All display elements for range sliders
@@ -82,7 +80,6 @@ class App {
             noiseOpacity: document.getElementById('noise-opacity-value'),
             noiseScale: document.getElementById('noise-scale-value'),
             gifFps: document.getElementById('gif-fps-value'),
-            colorThreshold: document.getElementById('color-threshold-value'),
         };
     }
 
