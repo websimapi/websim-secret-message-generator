@@ -14,6 +14,7 @@
     </script>
 </head>
 <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
     <div id="app">
         <div class="input-container">
             <div class="input-group">
@@ -21,8 +22,11 @@
                 <textarea id="scrambled-input" rows="5">THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.</textarea>
             </div>
             <div class="input-group">
-                <label for="hidden-input">Hidden Message (Cyan)</label>
-                <textarea id="hidden-input" rows="5">THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!</textarea>
+                <label>Hidden Messages (Cyan)</label>
+                <div id="hidden-messages-list">
+                    <!-- JS will populate this -->
+                </div>
+                <button id="add-hidden-message">+ Add Message</button>
             </div>
         </div>
 
@@ -101,6 +105,19 @@
                     <div class="setting-item range-item">
                         <label for="noise-scale">Noise Scale: <span id="noise-scale-value">1</span>px</label>
                         <input type="range" id="noise-scale" min="1" max="10" value="1" step="1">
+                    </div>
+                </fieldset>
+                
+                <fieldset class="fieldset-span-2">
+                    <legend>GIF</legend>
+                    <div class="setting-item range-item">
+                        <label for="gif-fps">Animation FPS: <span id="gif-fps-value">5</span></label>
+                        <input type="range" id="gif-fps" min="1" max="30" value="5" step="1">
+                    </div>
+                    <div class="gif-controls">
+                        <button id="play-pause-animation">Play</button>
+                        <button id="generate-gif-btn">Generate & Download GIF</button>
+                        <span id="gif-status"></span>
                     </div>
                 </fieldset>
             </div>

@@ -55,6 +55,45 @@ textarea:focus {
     box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
 }
 
+#hidden-messages-list .hidden-message-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#hidden-messages-list textarea {
+    flex-grow: 1;
+    height: 60px; /* A smaller default height for multiple messages */
+}
+
+#hidden-messages-list button.remove-message {
+    padding: 5px 10px;
+    background-color: #fce4e4;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+#hidden-messages-list button.remove-message:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#add-hidden-message {
+    margin-top: 5px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+    width: fit-content;
+}
+#add-hidden-message:hover {
+    background-color: #e0e0e0;
+}
+
 #settings-container {
     background-color: #f9f9f9;
     border: 1px solid #ddd;
@@ -115,6 +154,38 @@ textarea:focus {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px 25px;
+}
+
+.gif-controls {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gif-controls button {
+    padding: 8px 15px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.gif-controls button:hover {
+    background-color: #0056b3;
+}
+
+.gif-controls button:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+#gif-status {
+    font-size: 0.9em;
+    color: #555;
 }
 
 #output-container {
