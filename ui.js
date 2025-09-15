@@ -1,83 +1,23 @@
-export const elements = {
-    framesList: document.getElementById('frames-list'),
-    addFrameBtn: document.getElementById('add-frame-btn'),
-    scrambledOutput: document.getElementById('output-scrambled'),
-    hiddenOutput: document.getElementById('output-hidden'),
-    outputContainer: document.getElementById('output-container'),
-    noiseCanvas: document.getElementById('noise-canvas'),
-    playPauseBtn: document.getElementById('play-pause-animation'),
-    generateGifBtn: document.getElementById('generate-gif-btn'),
-    gifStatusEl: document.getElementById('gif-status'),
-    controls: {
-        scrambledColor: document.getElementById('scrambled-color'),
-        scrambledBlendMode: document.getElementById('scrambled-blend-mode'),
-        hiddenColor: document.getElementById('hidden-color'),
-        hiddenBlendMode: document.getElementById('hidden-blend-mode'),
-        hiddenOffsetX: document.getElementById('hidden-offset-x'),
-        hiddenOffsetY: document.getElementById('hidden-offset-y'),
-        fontSize: document.getElementById('font-size'),
-        fontWeight: document.getElementById('font-weight'),
-        letterSpacing: document.getElementById('letter-spacing'),
-        lineHeight: document.getElementById('line-height'),
-        bgColor: document.getElementById('bg-color'),
-        noiseOpacity: document.getElementById('noise-opacity'),
-        noiseType: document.getElementById('noise-type'),
-        noiseScale: document.getElementById('noise-scale'),
-        gifFps: document.getElementById('gif-fps'),
-    },
-    valueDisplays: {
-        hiddenOffsetX: document.getElementById('hidden-offset-x-value'),
-        hiddenOffsetY: document.getElementById('hidden-offset-y-value'),
-        fontSize: document.getElementById('font-size-value'),
-        fontWeight: document.getElementById('font-weight-value'),
-        letterSpacing: document.getElementById('letter-spacing-value'),
-        lineHeight: document.getElementById('line-height-value'),
-        noiseOpacity: document.getElementById('noise-opacity-value'),
-        noiseScale: document.getElementById('noise-scale-value'),
-        gifFps: document.getElementById('gif-fps-value'),
-    }
-};
+import { generateScrambledText } from './utils.js';
+import { updateOutput } from './output.js';
+import { stopAnimation } from './animation.js';
 
-const blendModes = [
-    'normal', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 
-    'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference',
-    'exclusion', 'hue', 'saturation', 'color', 'luminosity'
-];
+const framesList = document.getElementById('frames-list');
+const addFrameBtn = document.getElementById('add-frame-btn');
 
-function populateSelect(selectElement, options, selectedValue) {
-    options.forEach(option => {
-        const optionElement = document.createElement('option');
-        optionElement.value = option;
-        optionElement.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-        if (option === selectedValue) {
-            optionElement.selected = true;
-        }
-        selectElement.appendChild(optionElement);
+export function getFramesData() {
+    return Array.from(framesList.querySelectorAll('.frame-item')).map(item => {
+        const scrambledInput = item.querySelector('.scrambled-input');
+        const hiddenInput = item.querySelector('.hidden-input');
+        return {
+            scrambled: scrambledInput ? scrambledInput.value : '',
+            hidden: hiddenInput ? hiddenInput.value : ''
+        };
     });
 }
 
-export function populateBlendModes() {
-    populateSelect(elements.controls.scrambledBlendMode, blendModes, 'lighten');
-    populateSelect(elements.controls.hiddenBlendMode, blendModes, 'darken');
-}
-
-export function generateScrambledText(sourceText) {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let result = '';
-    for (let i = 0; i < sourceText.length; i++) {
-        const char = sourceText[i];
-        if (/[a-zA-Z]/.test(char)) {
-            const randomChar = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-            result += (char === char.toUpperCase()) ? randomChar : randomChar.toLowerCase();
-        } else {
-            result += char;
-        }
-    }
-    return result;
-}
-
 export function updateFrameNumbers() {
-    const frameItems = elements.framesList.querySelectorAll('.frame-item');
+    const frameItems = framesList.querySelectorAll('.frame-item');
     frameItems.forEach((item, index) => {
         const header = item.querySelector('h4');
         if (header) {
@@ -86,39 +26,102 @@ export function updateFrameNumbers() {
     });
 }
 
-export function createFrameElement(frameData) {
+export function createFrameInput(scrambled = '', hidden = '') {
     const item = document.createElement('div');
     item.className = 'frame-item';
-    item.dataset.id = frameData.id;
 
-    item.innerHTML = `
-        <div class="frame-item-header">
-            <h4></h4>
-            <button class="remove-frame-btn">Remove</button>
-        </div>
-        <div class="frame-inputs">
-            <div class="input-group">
-                <label class="has-toggle">
-                    <span>Scrambled Text (Red)</span>
-                    <div class="auto-scramble-toggle" title="Automatically generate scrambled text based on the hidden message.">
-                        <span>Auto-scramble</span>
-                        <input type="checkbox" class="auto-scramble-toggle-cb">
-                    </div>
-                </label>
-                <textarea class="scrambled-input" rows="4"></textarea>
-            </div>
-            <div class="input-group">
-                <label>Hidden Message (Cyan)</label>
-                <textarea class="hidden-input" rows="4"></textarea>
-            </div>
-        </div>
-    `;
+    const header = document.createElement('div');
+    header.className = 'frame-item-header';
 
-    // Populate the new element with frame data
-    item.querySelector('.scrambled-input').value = frameData.scrambled;
-    item.querySelector('.hidden-input').value = frameData.hidden;
-    item.querySelector('.auto-scramble-toggle-cb').checked = frameData.autoScramble;
+    const title = document.createElement('h4');
+    // Title will be set by updateFrameNumbers
 
-    elements.framesList.appendChild(item);
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-frame-btn';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', () => {
+        item.remove();
+        stopAnimation();
+        updateOutput();
+        updateFrameNumbers();
+    });
+    
+    header.appendChild(title);
+    header.appendChild(removeBtn);
+
+    const inputsDiv = document.createElement('div');
+    inputsDiv.className = 'frame-inputs';
+
+    const scrambledGroup = document.createElement('div');
+    scrambledGroup.className = 'input-group';
+    const scrambledLabel = document.createElement('label');
+    scrambledLabel.className = 'has-toggle';
+    scrambledLabel.innerHTML = '<span>Scrambled Text (Red)</span>';
+
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'auto-scramble-toggle';
+    toggleContainer.title = 'Automatically generate scrambled text based on the hidden message.';
+    const toggleLabel = document.createElement('span');
+    toggleLabel.textContent = 'Auto-scramble';
+    const toggleCheckbox = document.createElement('input');
+    toggleCheckbox.type = 'checkbox';
+    toggleCheckbox.checked = true;
+    
+    toggleContainer.appendChild(toggleLabel);
+    toggleContainer.appendChild(toggleCheckbox);
+    scrambledLabel.appendChild(toggleContainer);
+
+    const scrambledTextarea = document.createElement('textarea');
+    scrambledTextarea.className = 'scrambled-input';
+    scrambledTextarea.rows = 4;
+    scrambledTextarea.value = scrambled;
+    scrambledTextarea.addEventListener('input', () => {
+        toggleCheckbox.checked = false; // Disable auto-scramble on manual edit
+        updateOutput();
+    });
+    scrambledGroup.appendChild(scrambledLabel);
+    scrambledGroup.appendChild(scrambledTextarea);
+
+    const hiddenGroup = document.createElement('div');
+    hiddenGroup.className = 'input-group';
+    const hiddenLabel = document.createElement('label');
+    hiddenLabel.textContent = 'Hidden Message (Cyan)';
+    const hiddenTextarea = document.createElement('textarea');
+    hiddenTextarea.className = 'hidden-input';
+    hiddenTextarea.rows = 4;
+    hiddenTextarea.value = hidden;
+    hiddenTextarea.addEventListener('input', () => {
+        if (toggleCheckbox.checked) {
+            scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
+        }
+        updateOutput();
+    });
+    hiddenGroup.appendChild(hiddenLabel);
+    hiddenGroup.appendChild(hiddenTextarea);
+
+    toggleCheckbox.addEventListener('change', () => {
+        if (toggleCheckbox.checked) {
+            // Re-enable and generate
+            scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
+            updateOutput();
+        }
+    });
+
+    // Initial generation if needed
+    if (toggleCheckbox.checked && hidden.length > 0) {
+        scrambledTextarea.value = generateScrambledText(hidden);
+    }
+
+    inputsDiv.appendChild(scrambledGroup);
+    inputsDiv.appendChild(hiddenGroup);
+
+    item.appendChild(header);
+    item.appendChild(inputsDiv);
+    
+    framesList.appendChild(item);
     updateFrameNumbers();
+}
+
+export function setupUI() {
+    addFrameBtn.addEventListener('click', () => createFrameInput());
 }

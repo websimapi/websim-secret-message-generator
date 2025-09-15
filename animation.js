@@ -1,6 +1,6 @@
-import * as state from './state.js';
-import * as renderer from './renderer.js';
-import { elements } from './ui.js';
+import { getFramesData } from './ui.js';
+import { updateOutput } from './output.js';
+import { controls } from './settings.js';
 
 export const animationState = {
     isPlaying: false,
@@ -8,39 +8,45 @@ export const animationState = {
     currentFrame: 0
 };
 
-export function toggle() {
+const playPauseBtn = document.getElementById('play-pause-animation');
+
+export function toggleAnimation() {
     if (animationState.isPlaying) {
-        stop();
+        stopAnimation();
     } else {
-        start();
+        startAnimation();
     }
 }
 
-function start() {
-    const frames = state.getFrames();
+export function startAnimation() {
+    const frames = getFramesData();
     if (frames.length <= 1) return;
 
     animationState.isPlaying = true;
-    elements.playPauseBtn.textContent = 'Pause';
+    playPauseBtn.textContent = 'Pause';
 
-    const fps = parseInt(elements.controls.gifFps.value, 10);
+    const fps = parseInt(controls.gifFps.value, 10);
     const delay = 1000 / fps;
 
-    renderer.update(); // Initial update to highlight first frame
+    // Initial update to highlight first frame
+    updateOutput(); 
 
     animationState.intervalId = setInterval(() => {
         animationState.currentFrame = (animationState.currentFrame + 1) % frames.length;
-        renderer.update();
+        updateOutput();
     }, delay);
 }
 
-export function stop() {
+export function stopAnimation() {
     if (animationState.intervalId) {
         clearInterval(animationState.intervalId);
-        animationState.intervalId = null;
     }
     animationState.isPlaying = false;
     animationState.currentFrame = 0;
-    elements.playPauseBtn.textContent = 'Play';
-    renderer.update(); // Reset to first frame and remove highlight
+    updateOutput(); // Reset to first frame and remove highlight
+    playPauseBtn.textContent = 'Play';
+}
+
+export function setupAnimation() {
+    playPauseBtn.addEventListener('click', toggleAnimation);
 }
