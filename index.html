@@ -26,6 +26,75 @@
             </div>
         </div>
 
+        <div id="settings-container">
+            <h3>Anaglyph Settings</h3>
+            <div class="settings-grid">
+                <fieldset>
+                    <legend>Scrambled Layer</legend>
+                    <div class="setting-item">
+                        <label for="scrambled-color">Color</label>
+                        <input type="color" id="scrambled-color" value="#ff0000">
+                    </div>
+                    <div class="setting-item">
+                        <label for="scrambled-blend-mode">Blend Mode</label>
+                        <select id="scrambled-blend-mode"></select>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Hidden Layer</legend>
+                    <div class="setting-item">
+                        <label for="hidden-color">Color</label>
+                        <input type="color" id="hidden-color" value="#00ffff">
+                    </div>
+                    <div class="setting-item">
+                        <label for="hidden-blend-mode">Blend Mode</label>
+                        <select id="hidden-blend-mode"></select>
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="hidden-offset-x">Offset X: <span id="hidden-offset-x-value">0</span>px</label>
+                        <input type="range" id="hidden-offset-x" min="-10" max="10" value="0" step="1">
+                    </div>
+                     <div class="setting-item range-item">
+                        <label for="hidden-offset-y">Offset Y: <span id="hidden-offset-y-value">0</span>px</label>
+                        <input type="range" id="hidden-offset-y" min="-10" max="10" value="0" step="1">
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset-span-2">
+                    <legend>General Text</legend>
+                    <div class="setting-item range-item">
+                        <label for="font-size">Font Size: <span id="font-size-value">24</span>px</label>
+                        <input type="range" id="font-size" min="8" max="72" value="24" step="1">
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="font-weight">Font Weight: <span id="font-weight-value">700</span></label>
+                        <input type="range" id="font-weight" min="100" max="900" value="700" step="100">
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="letter-spacing">Letter Spacing: <span id="letter-spacing-value">2</span>px</label>
+                        <input type="range" id="letter-spacing" min="-5" max="20" value="2" step="1">
+                    </div>
+                    <div class="setting-item range-item">
+                        <label for="line-height">Line Height: <span id="line-height-value">1.2</span></label>
+                        <input type="range" id="line-height" min="0.5" max="3" value="1.2" step="0.1">
+                    </div>
+                </fieldset>
+                
+                <fieldset class="fieldset-span-2">
+                    <legend>Background</legend>
+                    <div class="setting-item">
+                        <label for="bg-color">Color</label>
+                        <input type="color" id="bg-color" value="#ffffff">
+                    </div>
+                     <div class="setting-item range-item">
+                        <label for="noise-opacity">Noise Opacity: <span id="noise-opacity-value">1.0</span></label>
+                        <input type="range" id="noise-opacity" min="0" max="1" value="1" step="0.05">
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
         <div id="output-container">
             <div id="output-scrambled" class="output-text"></div>
             <div id="output-hidden" class="output-text"></div>
@@ -35,4 +104,3 @@
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
-
