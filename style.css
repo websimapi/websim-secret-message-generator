@@ -92,10 +92,12 @@ textarea:focus {
 
 #output-scrambled {
     color: #ff0000; /* Red */
+    mix-blend-mode: darken;
 }
 
 #output-hidden {
     color: #00ffff; /* Cyan */
+    mix-blend-mode: darken;
 }
 
 #decoder {
@@ -112,7 +114,8 @@ textarea:focus {
 #decoder .decoder-lens {
     width: 200px;
     height: 200px;
-    background-color: rgba(255, 0, 0, 0.5);
+    background-color: #ff0000;
+    mix-blend-mode: multiply;
     border: 5px solid rgb(200, 0, 0);
     border-radius: 50%;
     pointer-events: auto; /* Capture events on the lens */
@@ -132,4 +135,3 @@ textarea:focus {
     border: 3px solid #4a2b1f;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 }
-
