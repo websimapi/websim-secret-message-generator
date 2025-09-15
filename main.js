@@ -1,32 +1,23 @@
+import { setupUI, createFrameInput } from './ui.js';
+import { setupSettings } from './settings.js';
+import { setupAnimation } from './animation.js';
+import { setupGifGeneration } from './gif-generator.js';
+import { initNoise } from './noise.js';
+import { updateOutput } from './output.js';
 
-```javascript
-import { controls, blendModes, addFrameBtn, playPauseBtn, generateGifBtn, outputContainer, noiseCanvas } from './elements.js';
-import { populateSelect } from './utils.js';
-import { createFrameInput, updateOutput, toggleAnimation } from './frames.js';
-import { updateStyles } from './styles.js';
-import { initNoiseResizeObserver } from './noise.js';
-import { generateGif } from './gifBuilder.js';
-
-export function setup() {
-  populateSelect(controls.scrambledBlendMode, blendModes, 'lighten');
-  populateSelect(controls.hiddenBlendMode, blendModes, 'darken');
-
-  addFrameBtn.addEventListener('click', () => createFrameInput());
-  for (const key in controls) {
-    controls[key].addEventListener('input', () => { updateStyles(); });
-  }
-  playPauseBtn.addEventListener('click', toggleAnimation);
-  generateGifBtn.addEventListener('click', generateGif);
-
-  initNoiseResizeObserver(() => updateStyles());
-
-  createFrameInput(
-    'THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.',
-    'THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!'
-  );
-  updateOutput();
-
-  const rect = outputContainer.getBoundingClientRect();
-  noiseCanvas.width = rect.width; noiseCanvas.height = rect.height;
-  updateStyles();
+function setup() {
+    setupSettings();
+    setupUI();
+    setupAnimation();
+    setupGifGeneration();
+    initNoise();
+    
+    // Initial frame
+    createFrameInput(
+        'THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.',
+        'THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!'
+    );
+    updateOutput();
 }
+
+setup();
