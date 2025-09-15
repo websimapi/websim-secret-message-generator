@@ -93,13 +93,43 @@ function updateFrameNumbers() {
 function updateOutput() {
     const frames = getFramesData();
     if (frames.length > 0) {
-        const currentFrameData = frames[animationState.currentFrame % frames.length];
+        const frameIndex = animationState.currentFrame % frames.length;
+        const currentFrameData = frames[frameIndex];
+        
+        // Highlight the current frame in the UI
+        document.querySelectorAll('.frame-item').forEach((item, index) => {
+            if (animationState.isPlaying) {
+                item.style.borderColor = index === frameIndex ? '#007bff' : '#ddd';
+            } else {
+                item.style.borderColor = '#ddd';
+            }
+        });
+
         scrambledOutput.textContent = currentFrameData.scrambled;
         hiddenOutput.textContent = currentFrameData.hidden || '';
     } else {
         scrambledOutput.textContent = '';
         hiddenOutput.textContent = '';
+        document.querySelectorAll('.frame-item').forEach(item => {
+            item.style.borderColor = '#ddd';
+        });
     }
+}
+
+function generateScrambledText(sourceText) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < sourceText.length; i++) {
+        const char = sourceText[i];
+        if (/[a-zA-Z]/.test(char)) {
+            const randomChar = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+            // Preserve case
+            result += (char === char.toUpperCase()) ? randomChar : randomChar.toLowerCase();
+        } else {
+            result += char; // Keep spaces, punctuation, numbers etc.
+        }
+    }
+    return result;
 }
 
 function createFrameInput(scrambled = '', hidden = '') {
@@ -131,12 +161,30 @@ function createFrameInput(scrambled = '', hidden = '') {
     const scrambledGroup = document.createElement('div');
     scrambledGroup.className = 'input-group';
     const scrambledLabel = document.createElement('label');
-    scrambledLabel.textContent = 'Scrambled Text (Red)';
+    scrambledLabel.className = 'has-toggle';
+    scrambledLabel.innerHTML = '<span>Scrambled Text (Red)</span>';
+
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'auto-scramble-toggle';
+    toggleContainer.title = 'Automatically generate scrambled text based on the hidden message.';
+    const toggleLabel = document.createElement('span');
+    toggleLabel.textContent = 'Auto-scramble';
+    const toggleCheckbox = document.createElement('input');
+    toggleCheckbox.type = 'checkbox';
+    toggleCheckbox.checked = true;
+    
+    toggleContainer.appendChild(toggleLabel);
+    toggleContainer.appendChild(toggleCheckbox);
+    scrambledLabel.appendChild(toggleContainer);
+
     const scrambledTextarea = document.createElement('textarea');
     scrambledTextarea.className = 'scrambled-input';
     scrambledTextarea.rows = 4;
     scrambledTextarea.value = scrambled;
-    scrambledTextarea.addEventListener('input', updateOutput);
+    scrambledTextarea.addEventListener('input', () => {
+        toggleCheckbox.checked = false; // Disable auto-scramble on manual edit
+        updateOutput();
+    });
     scrambledGroup.appendChild(scrambledLabel);
     scrambledGroup.appendChild(scrambledTextarea);
 
@@ -148,9 +196,27 @@ function createFrameInput(scrambled = '', hidden = '') {
     hiddenTextarea.className = 'hidden-input';
     hiddenTextarea.rows = 4;
     hiddenTextarea.value = hidden;
-    hiddenTextarea.addEventListener('input', updateOutput);
+    hiddenTextarea.addEventListener('input', () => {
+        if (toggleCheckbox.checked) {
+            scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
+        }
+        updateOutput();
+    });
     hiddenGroup.appendChild(hiddenLabel);
     hiddenGroup.appendChild(hiddenTextarea);
+
+    toggleCheckbox.addEventListener('change', () => {
+        if (toggleCheckbox.checked) {
+            // Re-enable and generate
+            scrambledTextarea.value = generateScrambledText(hiddenTextarea.value);
+            updateOutput();
+        }
+    });
+
+    // Initial generation if needed
+    if (toggleCheckbox.checked && hidden.length > 0) {
+        scrambledTextarea.value = generateScrambledText(hidden);
+    }
 
     inputsDiv.appendChild(scrambledGroup);
     inputsDiv.appendChild(hiddenGroup);
@@ -248,6 +314,9 @@ function startAnimation() {
     const fps = parseInt(controls.gifFps.value, 10);
     const delay = 1000 / fps;
 
+    // Initial update to highlight first frame
+    updateOutput(); 
+
     animationState.intervalId = setInterval(() => {
         animationState.currentFrame = (animationState.currentFrame + 1) % frames.length;
         updateOutput();
@@ -260,7 +329,7 @@ function stopAnimation() {
     }
     animationState.isPlaying = false;
     animationState.currentFrame = 0;
-    updateOutput(); // Reset to first frame
+    updateOutput(); // Reset to first frame and remove highlight
     playPauseBtn.textContent = 'Play';
 }
 
