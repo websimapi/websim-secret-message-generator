@@ -78,7 +78,7 @@ export class GifGenerator {
                     
                     // Draw scrambled image with red filter
                     if (frameData.scrambledImage) {
-                        await this.drawImageWithColorFilter(ctx, frameData.scrambledImage, this.controls.scrambledColor.value, x, y);
+                        await this.drawImageWithColorFilter(ctx, frameData.scrambledImage, this.controls.scrambledColor.value, x, y, frameData.processedScrambledImage);
                     }
 
                     // 5. Draw Hidden Content (Text + Image)
@@ -94,7 +94,7 @@ export class GifGenerator {
                     
                     // Draw hidden image with cyan filter
                     if (frameData.hiddenImage) {
-                        await this.drawImageWithColorFilter(ctx, frameData.hiddenImage, this.controls.hiddenColor.value, x + offsetX, y + offsetY);
+                        await this.drawImageWithColorFilter(ctx, frameData.hiddenImage, this.controls.hiddenColor.value, x + offsetX, y + offsetY, frameData.processedHiddenImage);
                     }
 
                     resolve(ctx);
@@ -130,34 +130,47 @@ export class GifGenerator {
         gif.render();
     }
 
-    async drawImageWithColorFilter(ctx, imageFile, color, x, y) {
+    async drawImageWithColorFilter(ctx, imageFile, color, x, y, processedCanvas = null) {
         return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = img.width;
-                tempCanvas.height = img.height;
-                
-                // Draw original image
-                tempCtx.drawImage(img, 0, 0);
-                
-                // Apply color filter
-                tempCtx.globalCompositeOperation = 'multiply';
-                tempCtx.fillStyle = color;
-                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-                
-                // Scale to fit container
+            if (processedCanvas) {
+                // Use the pre-processed 2-bit color canvas
                 const maxWidth = ctx.canvas.width - x;
                 const maxHeight = ctx.canvas.height - y;
-                const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
-                const scaledWidth = img.width * scale;
-                const scaledHeight = img.height * scale;
+                const scale = Math.min(maxWidth / processedCanvas.width, maxHeight / processedCanvas.height, 1);
+                const scaledWidth = processedCanvas.width * scale;
+                const scaledHeight = processedCanvas.height * scale;
                 
-                ctx.drawImage(tempCanvas, x, y, scaledWidth, scaledHeight);
+                ctx.drawImage(processedCanvas, x, y, scaledWidth, scaledHeight);
                 resolve();
-            };
-            img.src = URL.createObjectURL(imageFile);
+            } else {
+                // Fallback to original method for regular files
+                const img = new Image();
+                img.onload = () => {
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = img.width;
+                    tempCanvas.height = img.height;
+                    
+                    // Draw original image
+                    tempCtx.drawImage(img, 0, 0);
+                    
+                    // Apply color filter
+                    tempCtx.globalCompositeOperation = 'multiply';
+                    tempCtx.fillStyle = color;
+                    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // Scale to fit container
+                    const maxWidth = ctx.canvas.width - x;
+                    const maxHeight = ctx.canvas.height - y;
+                    const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+                    const scaledWidth = img.width * scale;
+                    const scaledHeight = img.height * scale;
+                    
+                    ctx.drawImage(tempCanvas, x, y, scaledWidth, scaledHeight);
+                    resolve();
+                };
+                img.src = URL.createObjectURL(imageFile);
+            }
         });
     }
 }

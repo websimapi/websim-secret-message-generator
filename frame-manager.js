@@ -20,7 +20,9 @@ export class FrameManager {
                 scrambledImage: scrambledImageData,
                 hiddenImage: hiddenImageData,
                 scrambledImageFrames: item.scrambledImageFrames || null,
-                hiddenImageFrames: item.hiddenImageFrames || null
+                hiddenImageFrames: item.hiddenImageFrames || null,
+                processedScrambledImage: item.processedScrambledImage || null,
+                processedHiddenImage: item.processedHiddenImage || null
             };
         });
     }
@@ -47,30 +49,39 @@ export class FrameManager {
             if (file.type === 'image/gif') {
                 // Handle GIF
                 const frames = await this.extractGifFrames(file);
+                const processedFrames = frames.map(frame => this.process2BitColor(frame.canvas, isScrambled));
+                
                 if (isScrambled) {
-                    frameItem.scrambledImageFrames = frames;
+                    frameItem.scrambledImageFrames = processedFrames.map((canvas, i) => ({ canvas, delay: frames[i].delay }));
                 } else {
-                    frameItem.hiddenImageFrames = frames;
+                    frameItem.hiddenImageFrames = processedFrames.map((canvas, i) => ({ canvas, delay: frames[i].delay }));
                 }
                 
                 // Show first frame as preview
-                if (frames.length > 0) {
-                    preview.innerHTML = `<img src="${frames[0].canvas.toDataURL()}" alt="GIF preview">`;
+                if (processedFrames.length > 0) {
+                    preview.innerHTML = `<img src="${processedFrames[0].toDataURL()}" alt="GIF preview">`;
                     preview.style.display = 'block';
                 }
             } else {
                 // Handle static image
-                const img = document.createElement('img');
+                const img = new Image();
+                img.onload = () => {
+                    const processedCanvas = this.process2BitColor(img, isScrambled);
+                    const processedImg = document.createElement('img');
+                    processedImg.src = processedCanvas.toDataURL();
+                    preview.innerHTML = '';
+                    preview.appendChild(processedImg);
+                    preview.style.display = 'block';
+                    
+                    if (isScrambled) {
+                        frameItem.scrambledImageFrames = null;
+                        frameItem.processedScrambledImage = processedCanvas;
+                    } else {
+                        frameItem.hiddenImageFrames = null;
+                        frameItem.processedHiddenImage = processedCanvas;
+                    }
+                };
                 img.src = URL.createObjectURL(file);
-                preview.innerHTML = '';
-                preview.appendChild(img);
-                preview.style.display = 'block';
-                
-                if (isScrambled) {
-                    frameItem.scrambledImageFrames = null;
-                } else {
-                    frameItem.hiddenImageFrames = null;
-                }
             }
 
             clearBtn.style.display = 'inline-block';
@@ -84,12 +95,60 @@ export class FrameManager {
             
             if (isScrambled) {
                 frameItem.scrambledImageFrames = null;
+                frameItem.processedScrambledImage = null;
             } else {
                 frameItem.hiddenImageFrames = null;
+                frameItem.processedHiddenImage = null;
             }
             
             this.onFrameChange('update');
         });
+    }
+
+    process2BitColor(sourceImage, isScrambled) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size based on source
+        if (sourceImage instanceof HTMLCanvasElement) {
+            canvas.width = sourceImage.width;
+            canvas.height = sourceImage.height;
+            ctx.drawImage(sourceImage, 0, 0);
+        } else {
+            canvas.width = sourceImage.width;
+            canvas.height = sourceImage.height;
+            ctx.drawImage(sourceImage, 0, 0);
+        }
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const alpha = data[i + 3];
+            
+            // Convert to grayscale for intensity
+            const gray = (r * 0.299 + g * 0.587 + b * 0.114);
+            
+            if (isScrambled) {
+                // Red channel for scrambled content
+                data[i] = gray;     // Red
+                data[i + 1] = 0;    // Green
+                data[i + 2] = 0;    // Blue
+                data[i + 3] = alpha; // Alpha
+            } else {
+                // Cyan channel for hidden content
+                data[i] = 0;        // Red
+                data[i + 1] = gray; // Green
+                data[i + 2] = gray; // Blue
+                data[i + 3] = alpha; // Alpha
+            }
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
     }
 
     async extractGifFrames(file) {
