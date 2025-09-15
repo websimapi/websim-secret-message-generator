@@ -34,9 +34,9 @@ export class GifGenerator {
         offscreenCanvas.height = height;
         const ctx = offscreenCanvas.getContext('2d');
 
-        const drawFrame = (frameData) => {
-            return new Promise(resolve => {
-                setTimeout(() => {
+        const drawFrame = async (frameData) => {
+            return new Promise(async (resolve) => {
+                setTimeout(async () => {
                     // 1. Background color
                     ctx.fillStyle = this.controls.bgColor.value;
                     ctx.fillRect(0, 0, width, height);
@@ -46,20 +46,18 @@ export class GifGenerator {
                     ctx.drawImage(this.noiseCanvas, 0, 0);
                     ctx.globalAlpha = 1.0;
 
-                    // 3. Text rendering
+                    // 3. Get shared styles for text
                     const scrambledOutput = document.getElementById('output-scrambled');
                     const baseStyles = window.getComputedStyle(scrambledOutput);
                     const x = parseFloat(baseStyles.left);
                     const y = parseFloat(baseStyles.top);
                     ctx.textBaseline = 'top';
 
-                    // Get shared styles
                     const fontSize = this.controls.fontSize.value;
                     const fontWeight = this.controls.fontWeight.value;
                     const font = `${fontWeight} ${fontSize}px 'Courier New', Courier, monospace`;
                     ctx.font = font;
 
-                    // Function to draw multiline text
                     const drawText = (text, startX, startY, lineHeight) => {
                         const lines = text.split('\n');
                         for (let i = 0; i < lines.length; i++) {
@@ -69,17 +67,35 @@ export class GifGenerator {
                     
                     const lineHeight = parseFloat(this.controls.lineHeight.value);
 
-                    // Draw Scrambled Text
+                    // 4. Draw Scrambled Content (Text + Image)
                     ctx.globalCompositeOperation = this.controls.scrambledBlendMode.value;
-                    ctx.fillStyle = this.controls.scrambledColor.value;
-                    drawText(frameData.scrambled, x, y, lineHeight);
+                    
+                    // Draw scrambled text
+                    if (frameData.scrambled) {
+                        ctx.fillStyle = this.controls.scrambledColor.value;
+                        drawText(frameData.scrambled, x, y, lineHeight);
+                    }
+                    
+                    // Draw scrambled image with red filter
+                    if (frameData.scrambledImage) {
+                        await this.drawImageWithColorFilter(ctx, frameData.scrambledImage, this.controls.scrambledColor.value, x, y);
+                    }
 
-                    // Draw Hidden Text
+                    // 5. Draw Hidden Content (Text + Image)
                     ctx.globalCompositeOperation = this.controls.hiddenBlendMode.value;
-                    ctx.fillStyle = this.controls.hiddenColor.value;
                     const offsetX = parseInt(this.controls.hiddenOffsetX.value, 10);
                     const offsetY = parseInt(this.controls.hiddenOffsetY.value, 10);
-                    drawText(frameData.hidden, x + offsetX, y + offsetY, lineHeight);
+                    
+                    // Draw hidden text
+                    if (frameData.hidden) {
+                        ctx.fillStyle = this.controls.hiddenColor.value;
+                        drawText(frameData.hidden, x + offsetX, y + offsetY, lineHeight);
+                    }
+                    
+                    // Draw hidden image with cyan filter
+                    if (frameData.hiddenImage) {
+                        await this.drawImageWithColorFilter(ctx, frameData.hiddenImage, this.controls.hiddenColor.value, x + offsetX, y + offsetY);
+                    }
 
                     resolve(ctx);
                 }, 50);
@@ -112,5 +128,36 @@ export class GifGenerator {
         });
 
         gif.render();
+    }
+
+    async drawImageWithColorFilter(ctx, imageFile, color, x, y) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                
+                // Draw original image
+                tempCtx.drawImage(img, 0, 0);
+                
+                // Apply color filter
+                tempCtx.globalCompositeOperation = 'multiply';
+                tempCtx.fillStyle = color;
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Scale to fit container
+                const maxWidth = ctx.canvas.width - x;
+                const maxHeight = ctx.canvas.height - y;
+                const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+                const scaledWidth = img.width * scale;
+                const scaledHeight = img.height * scale;
+                
+                ctx.drawImage(tempCanvas, x, y, scaledWidth, scaledHeight);
+                resolve();
+            };
+            img.src = URL.createObjectURL(imageFile);
+        });
     }
 }

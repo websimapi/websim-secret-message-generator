@@ -137,8 +137,12 @@ class App {
                 }
             });
 
+            // Update text content
             this.scrambledOutput.textContent = currentFrameData.scrambled;
             this.hiddenOutput.textContent = currentFrameData.hidden || '';
+            
+            // Handle image display in the output
+            this.updateImageDisplay(currentFrameData);
         } else {
             this.scrambledOutput.textContent = '';
             this.hiddenOutput.textContent = '';
@@ -146,6 +150,48 @@ class App {
                 item.style.borderColor = '#ddd';
             });
         }
+    }
+
+    updateImageDisplay(frameData) {
+        // Remove existing image elements
+        const existingImages = this.outputContainer.querySelectorAll('.output-image');
+        existingImages.forEach(img => img.remove());
+
+        // Add scrambled image
+        if (frameData.scrambledImage) {
+            this.displayImage(frameData.scrambledImage, 'scrambled');
+        }
+
+        // Add hidden image
+        if (frameData.hiddenImage) {
+            this.displayImage(frameData.hiddenImage, 'hidden');
+        }
+    }
+
+    displayImage(imageFile, type) {
+        const img = document.createElement('img');
+        img.className = `output-image output-image-${type}`;
+        img.style.position = 'absolute';
+        img.style.top = '20px';
+        img.style.left = '20px';
+        img.style.maxWidth = 'calc(100% - 40px)';
+        img.style.maxHeight = 'calc(100% - 40px)';
+        img.style.objectFit = 'contain';
+        img.style.pointerEvents = 'none';
+        
+        if (type === 'scrambled') {
+            img.style.filter = `hue-rotate(0deg) saturate(0%) brightness(50%) sepia(100%) hue-rotate(0deg) saturate(600%) brightness(100%)`;
+            img.style.mixBlendMode = this.controls.scrambledBlendMode.value;
+        } else {
+            const offsetX = parseInt(this.controls.hiddenOffsetX.value, 10);
+            const offsetY = parseInt(this.controls.hiddenOffsetY.value, 10);
+            img.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            img.style.filter = `hue-rotate(180deg) saturate(100%) brightness(70%)`;
+            img.style.mixBlendMode = this.controls.hiddenBlendMode.value;
+        }
+        
+        img.src = URL.createObjectURL(imageFile);
+        this.outputContainer.appendChild(img);
     }
 
     initialSetup() {
