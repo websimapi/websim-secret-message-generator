@@ -1,5 +1,3 @@
-
-```
 export class AIGenerator {
     constructor(frameManager, canvasRenderer, uiElements) {
         this.frameManager = frameManager;

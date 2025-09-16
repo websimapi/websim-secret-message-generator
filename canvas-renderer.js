@@ -1,5 +1,3 @@
-
-```javascript
 export class CanvasRenderer {
     constructor(outputContainer, noiseCanvas, controls) {
         this.outputContainer = outputContainer;
@@ -59,33 +57,31 @@ export class CanvasRenderer {
         const x = parseFloat(baseStyles.left);
         const y = parseFloat(baseStyles.top);
 
-        ctx.font = `${baseStyles.fontWeight} ${baseStyles.fontSize} '${baseStyles.fontFamily}'`;
+        ctx.font = `${baseStyles.fontWeight} ${baseStyles.fontSize} ${baseStyles.fontFamily.split(',')[0]}`; // Use first font in family
         ctx.letterSpacing = baseStyles.letterSpacing;
         ctx.textBaseline = 'top';
 
         // Function to draw multiline text
-        const drawText = (text, startX, startY, lineHeight, letterSpacing) => {
-            const lines = text.split('\\n');
+        const drawText = (text, startX, startY) => {
+            const lines = text.split('\n');
             const fontSize = parseFloat(baseStyles.fontSize);
+            const lineHeight = parseFloat(this.controls.lineHeight.value);
             const lineSpacing = lineHeight * fontSize;
             for (let i = 0; i < lines.length; i++) {
                 ctx.fillText(lines[i], startX, startY + (i * lineSpacing));
             }
         };
 
-        const lineHeight = parseFloat(this.controls.lineHeight.value);
-        const letterSpacing = parseFloat(this.controls.letterSpacing.value);
-
         // Draw Scrambled Text
         ctx.globalCompositeOperation = this.controls.scrambledBlendMode.value;
         ctx.fillStyle = this.controls.scrambledColor.value;
-        drawText(frameData.scrambled, x, y, lineHeight, letterSpacing);
+        drawText(frameData.scrambled, x, y);
 
         // Draw Hidden Text
         ctx.globalCompositeOperation = this.controls.hiddenBlendMode.value;
         ctx.fillStyle = this.controls.hiddenColor.value;
         const offsetX = parseInt(this.controls.hiddenOffsetX.value, 10);
         const offsetY = parseInt(this.controls.hiddenOffsetY.value, 10);
-        drawText(frameData.hidden, x + offsetX, y + offsetY, lineHeight, letterSpacing);
+        drawText(frameData.hidden, x + offsetX, y + offsetY);
     }
 }
