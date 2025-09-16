@@ -34,31 +34,16 @@ export class AIGenerator {
             
             this.ui.statusEl.textContent = 'Sending to AI for generation...';
 
-            const settingsDescription = `
-The provided image is an anaglyph containing a hidden message. It has two text layers:
-1. Scrambled Text (intended for the red channel): "${currentFrameData.scrambled}"
-   - Color: ${this.controls.scrambledColor.value}
-   - Blend Mode: ${this.controls.scrambledBlendMode.value}
-2. Hidden Message (intended for the cyan channel): "${currentFrameData.hidden}"
-   - Color: ${this.controls.hiddenColor.value}
-   - Blend Mode: ${this.controls.hiddenBlendMode.value}
-   - Offset: X=${this.controls.hiddenOffsetX.value}px, Y=${this.controls.hiddenOffsetY.value}px
-
-Shared Text Style:
-- Font Size: ${this.controls.fontSize.value}px
-- Font Weight: ${this.controls.fontWeight.value}
-- Letter Spacing: ${this.controls.letterSpacing.value}px
-`;
-
-            const fullPrompt = `**Critical Task:** Transform the scene based on the user's prompt, but you MUST perfectly preserve and integrate the anaglyph text effect from the provided image.
+            const fullPrompt = `**Primary Goal:** Generate a new scene based on the user's prompt that serves as a background for the graphic element provided in the input image.
 
 **User's scene description:** "${prompt}"
 
-**Analysis of Input Image:**
-${settingsDescription}
-
-**Instructions:**
-Your primary goal is to generate a new scene while ensuring the anaglyph text remains clearly visible and functional. The text overlay from the input image is a requirement and must be included in the output. The visual properties of the text (colors, positions, blend modes) create a 3D effect to hide a message. This effect must be maintained. Integrate the text pattern seamlessly into your generated scene. Do not change the text itself.`;
+**Critical Instructions:**
+1.  The input image contains a piece of text art with an anaglyph effect. This entire text block is the main subject.
+2.  You MUST preserve this text art *exactly* as it appears in the input image. Do not alter its colors, shape, text, or position.
+3.  The text art must be the central focus of the final image, clearly visible and unobstructed.
+4.  Your task is to create a scene *behind* or *around* the text art that matches the user's description. The text art should appear as an overlay on your generated scene.
+5.  Do not attempt to interpret or change the text itself. Treat it as a single, immutable graphic element.`;
             
             const { width, height } = this.canvasRenderer.outputContainer.getBoundingClientRect();
 
