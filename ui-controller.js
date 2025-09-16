@@ -45,6 +45,11 @@ export class UIController {
                 }
             });
         }
+        // Also handle the AI slider, which is not in the main `controls` object
+        const aiPreserveSlider = document.getElementById('ai-preserve-percentage');
+        if (aiPreserveSlider) {
+            aiPreserveSlider.addEventListener('input', () => this.updateValueDisplays());
+        }
     }
 
     setOnSettingsChange(callback) {
@@ -84,15 +89,30 @@ export class UIController {
         this.noiseCanvas.style.opacity = noiseOpacity;
 
         // Update value displays
-        for (const key in this.valueDisplays) {
-            if (this.valueDisplays[key] && this.controls[key]) {
-                this.valueDisplays[key].textContent = this.controls[key].value;
-            }
-        }
+        this.updateValueDisplays();
         
         // Regenerate noise if noise-related settings changed
         const scale = parseInt(this.controls.noiseScale.value, 10);
         const type = this.controls.noiseType.value;
         this.noiseGenerator.generate(scale, type);
+    }
+
+    updateValueDisplays() {
+        // Main controls
+        this.valueDisplays.hiddenOffsetX.textContent = this.controls.hiddenOffsetX.value;
+        this.valueDisplays.hiddenOffsetY.textContent = this.controls.hiddenOffsetY.value;
+        this.valueDisplays.fontSize.textContent = this.controls.fontSize.value;
+        this.valueDisplays.fontWeight.textContent = this.controls.fontWeight.value;
+        this.valueDisplays.letterSpacing.textContent = this.controls.letterSpacing.value;
+        this.valueDisplays.lineHeight.textContent = this.controls.lineHeight.value;
+        this.valueDisplays.noiseOpacity.textContent = this.controls.noiseOpacity.value;
+        this.valueDisplays.noiseScale.textContent = this.controls.noiseScale.value;
+        this.valueDisplays.gifFps.textContent = this.controls.gifFps.value;
+
+        // AI preserve percentage
+        if (this.valueDisplays.aiPreservePercentage) {
+            const aiSlider = document.getElementById('ai-preserve-percentage');
+            this.valueDisplays.aiPreservePercentage.textContent = aiSlider.value;
+        }
     }
 }

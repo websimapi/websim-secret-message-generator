@@ -34,13 +34,24 @@ export class AIGenerator {
             
             this.ui.statusEl.textContent = 'Sending to AI for generation...';
 
+            const preservationStrength = parseInt(this.ui.preservePercentage.value, 10);
+            let preservationInstructions;
+
+            if (preservationStrength === 100) {
+                preservationInstructions = `2. You MUST preserve this text art *exactly* as it appears in the input image. Do not alter its colors, shape, text, or position. It must be perfectly preserved.`;
+            } else if (preservationStrength >= 85) {
+                preservationInstructions = `2. Preserve the text art with very high fidelity (around ${preservationStrength}%). Minor, subtle stylistic blending with the background is acceptable, but the original text's shape, color, and legibility must be almost perfectly maintained.`;
+            } else { // 50-84
+                preservationInstructions = `2. The text art should be preserved at about ${preservationStrength}% strength. You have creative freedom to stylistically integrate it with the scene (e.g., matching textures, lighting). The text must remain the clear subject and be fully legible, but it does not need to be an exact pixel-for-pixel copy.`;
+            }
+
             const fullPrompt = `**Primary Goal:** Generate a new scene based on the user's prompt that serves as a background for the graphic element provided in the input image.
 
 **User's scene description:** "${prompt}"
 
 **Critical Instructions:**
 1.  The input image contains a piece of text art with an anaglyph effect. This entire text block is the main subject.
-2.  You MUST preserve this text art *exactly* as it appears in the input image. Do not alter its colors, shape, text, or position.
+${preservationInstructions}
 3.  The text art must be the central focus of the final image, clearly visible and unobstructed.
 4.  Your task is to create a scene *behind* or *around* the text art that matches the user's description. The text art should appear as an overlay on your generated scene.
 5.  Do not attempt to interpret or change the text itself. Treat it as a single, immutable graphic element.`;
@@ -80,6 +91,7 @@ export class AIGenerator {
     setLoadingState(isLoading) {
         this.ui.generateBtn.disabled = isLoading;
         this.ui.promptTextarea.disabled = isLoading;
+        this.ui.preservePercentage.disabled = isLoading;
         if (isLoading) {
             this.ui.resultContainer.style.display = 'none';
         }

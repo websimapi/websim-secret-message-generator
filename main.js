@@ -32,6 +32,7 @@ class App {
             resultContainer: document.getElementById('ai-result-container'),
             resultImg: document.getElementById('ai-result-img'),
             applyBtn: document.getElementById('apply-ai-scene-btn'),
+            preservePercentage: document.getElementById('ai-preserve-percentage'),
         };
 
         this.controls = {
@@ -50,6 +51,7 @@ class App {
             noiseType: document.getElementById('noise-type'),
             noiseScale: document.getElementById('noise-scale'),
             gifFps: document.getElementById('gif-fps'),
+            aiPreservePercentage: document.getElementById('ai-preserve-percentage-value'),
         };
 
         this.valueDisplays = {
