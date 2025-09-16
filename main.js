@@ -94,7 +94,9 @@ class App {
         this.aiGenerator = new AIGenerator(
             this.frameManager,
             this.canvasRenderer,
-            this.aiUI
+            this.aiUI,
+            this.animationController,
+            this.controls
         );
 
         this.uiController = new UIController(this.controls, this.valueDisplays, this.noiseGenerator);
