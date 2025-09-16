@@ -1,56 +1,39 @@
-import { UIController } from './ui-controller.js';
 import { NoiseGenerator } from './noise-generator.js';
 import { FrameManager } from './frame-manager.js';
 import { AnimationController } from './animation-controller.js';
 import { GifGenerator } from './gif-generator.js';
+import { UIController } from './ui-controller.js';
+import { CanvasRenderer } from './canvas-renderer.js';
+import { AIGenerator } from './ai-generator.js';
 
 class App {
     constructor() {
-        this.initializeDOMElements();
-        
-        this.noiseGenerator = new NoiseGenerator(this.noiseCanvas);
-        this.uiController = new UIController(this.controls, this.valueDisplays, this.noiseGenerator);
-
-        this.frameManager = new FrameManager(this.framesList, (type) => this.onFrameChange(type));
-        
-        this.animationController = new AnimationController(
-            this.frameManager,
-            (frameIndex) => this.updateOutput(frameIndex),
-            this.playPauseBtn,
-            this.controls.gifFps
-        );
-
-        this.gifGenerator = new GifGenerator(
-            this.frameManager,
-            this.outputContainer,
-            this.noiseCanvas,
-            this.controls,
-            this.gifStatus
-        );
-
-        this.addFrameBtn.addEventListener('click', () => this.frameManager.createFrameInput('', ''));
-        this.generateGifBtn.addEventListener('click', () => this.gifGenerator.generate(this.animationController));
-
-        // Initial setup
-        this.frameManager.createFrameInput('SCRAMBLED', 'SECRET');
-        this.uiController.updateStyles(); // Update styles after everything is initialized
+        this.initElements();
+        this.initComponents();
+        this.setupEventListeners();
+        this.initialSetup();
     }
 
-    initializeDOMElements() {
-        // Main containers
+    initElements() {
         this.framesList = document.getElementById('frames-list');
-        this.outputContainer = document.getElementById('output-container');
-        this.noiseCanvas = document.getElementById('noise-canvas');
+        this.addFrameBtn = document.getElementById('add-frame-btn');
         this.scrambledOutput = document.getElementById('output-scrambled');
         this.hiddenOutput = document.getElementById('output-hidden');
-
-        // Buttons and Status
-        this.addFrameBtn = document.getElementById('add-frame-btn');
+        this.outputContainer = document.getElementById('output-container');
+        this.noiseCanvas = document.getElementById('noise-canvas');
         this.playPauseBtn = document.getElementById('play-pause-animation');
         this.generateGifBtn = document.getElementById('generate-gif-btn');
-        this.gifStatus = document.getElementById('gif-status');
+        this.gifStatusEl = document.getElementById('gif-status');
 
-        // All settings controls
+        this.aiUI = {
+            promptTextarea: document.getElementById('ai-prompt'),
+            generateBtn: document.getElementById('generate-ai-scene-btn'),
+            statusEl: document.getElementById('ai-status'),
+            resultContainer: document.getElementById('ai-result-container'),
+            resultImg: document.getElementById('ai-result-img'),
+            applyBtn: document.getElementById('apply-ai-scene-btn'),
+        };
+
         this.controls = {
             scrambledColor: document.getElementById('scrambled-color'),
             scrambledBlendMode: document.getElementById('scrambled-blend-mode'),
@@ -69,7 +52,6 @@ class App {
             gifFps: document.getElementById('gif-fps'),
         };
 
-        // All display elements for range sliders
         this.valueDisplays = {
             hiddenOffsetX: document.getElementById('hidden-offset-x-value'),
             hiddenOffsetY: document.getElementById('hidden-offset-y-value'),
@@ -83,69 +65,125 @@ class App {
         };
     }
 
-    onFrameChange(type) {
-        if (this.animationController.isPlaying()) {
-            this.animationController.stop();
-        }
-        this.updateOutput(0);
-    }
-    
-    updateOutput(frameIndex = 0) {
-        const framesData = this.frameManager.getFramesData();
-        const activeFrame = framesData[frameIndex] || framesData[0];
+    initComponents() {
+        this.noiseGenerator = new NoiseGenerator(this.noiseCanvas);
         
-        if (activeFrame) {
-            this.scrambledOutput.textContent = activeFrame.scrambled || '';
-            this.hiddenOutput.textContent = activeFrame.hidden || '';
+        this.frameManager = new FrameManager(this.framesList, (action) => {
+            if (action === 'remove') {
+                this.animationController.stop();
+            }
+            this.updateOutput();
+        });
 
-            this.updateMediaDisplay(this.scrambledOutput, activeFrame.scrambledImageFrames, activeFrame.processedScrambledImage);
-            this.updateMediaDisplay(this.hiddenOutput, activeFrame.hiddenImageFrames, activeFrame.processedHiddenImage);
-        } else {
-             this.scrambledOutput.textContent = '';
-             this.hiddenOutput.textContent = '';
-             this.updateMediaDisplay(this.scrambledOutput, null, null);
-             this.updateMediaDisplay(this.hiddenOutput, null, null);
-        }
+        this.animationController = new AnimationController(
+            this.frameManager, 
+            (frameIndex) => this.updateOutput(frameIndex),
+            this.playPauseBtn,
+            this.controls.gifFps
+        );
 
-        // Highlight the active frame in the UI
-        const frameItems = this.framesList.querySelectorAll('.frame-item');
-        frameItems.forEach((item, index) => {
-            if (this.animationController.isPlaying() && index === frameIndex) {
-                item.style.borderColor = '#007bff';
-                item.style.boxShadow = '0 0 5px rgba(0,123,255,0.5)';
-            } else {
-                item.style.borderColor = '#ddd';
-                item.style.boxShadow = 'none';
+        this.canvasRenderer = new CanvasRenderer(this.outputContainer, this.noiseCanvas, this.controls);
+
+        this.gifGenerator = new GifGenerator(
+            this.frameManager,
+            this.canvasRenderer,
+            this.gifStatusEl,
+            this.controls
+        );
+
+        this.aiGenerator = new AIGenerator(
+            this.frameManager,
+            this.canvasRenderer,
+            this.aiUI
+        );
+
+        this.uiController = new UIController(this.controls, this.valueDisplays, this.noiseGenerator);
+        this.uiController.setOnSettingsChange(() => {
+            if (this.animationController.isPlaying()) {
+                this.animationController.stop();
             }
         });
     }
 
-    updateMediaDisplay(outputElement, gifFrames, processedImage) {
-        const existingImg = outputElement.querySelector('img.media-display');
-        if (existingImg) {
-            existingImg.remove();
-        }
+    setupEventListeners() {
+        this.addFrameBtn.addEventListener('click', () => {
+            this.frameManager.createFrameInput();
+        });
 
-        let imageToShow = null;
-        if (gifFrames && gifFrames.length > 0) {
-            // If animation is playing, cycle through frames. Otherwise, show first frame.
-            const frameIndex = this.animationController.isPlaying() ? this.animationController.getCurrentFrame() % gifFrames.length : 0;
-            imageToShow = gifFrames[frameIndex].canvas;
-        } else if (processedImage) {
-            imageToShow = processedImage;
-        }
+        this.generateGifBtn.addEventListener('click', async () => {
+            this.generateGifBtn.disabled = true;
+            this.playPauseBtn.disabled = true;
+            this.gifStatusEl.textContent = 'Initializing...';
+            
+            try {
+                await this.gifGenerator.generate(this.animationController);
+            } catch (error) {
+                console.error('GIF generation failed:', error);
+                this.gifStatusEl.textContent = 'Generation failed.';
+            } finally {
+                this.generateGifBtn.disabled = false;
+                this.playPauseBtn.disabled = false;
+            }
+        });
 
-        if (imageToShow) {
-            const img = document.createElement('img');
-            img.src = imageToShow.toDataURL();
-            img.className = 'media-display';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = 'calc(100% - 2em)';
-            outputElement.appendChild(img);
+        // Resize observer for the output container
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                this.noiseCanvas.width = width;
+                this.noiseCanvas.height = height;
+                this.uiController.updateStyles();
+            }
+        });
+
+        resizeObserver.observe(this.outputContainer);
+    }
+
+    updateOutput(frameIndex = null) {
+        const frames = this.frameManager.getFramesData();
+        if (frames.length > 0) {
+            const currentFrameIndex = frameIndex !== null ? frameIndex : this.animationController.getCurrentFrame();
+            const actualFrameIndex = currentFrameIndex % frames.length;
+            const currentFrameData = frames[actualFrameIndex];
+            
+            // Highlight the current frame in the UI
+            document.querySelectorAll('.frame-item').forEach((item, index) => {
+                if (this.animationController.isPlaying()) {
+                    item.style.borderColor = index === actualFrameIndex ? '#007bff' : '#ddd';
+                } else {
+                    item.style.borderColor = '#ddd';
+                }
+            });
+
+            this.scrambledOutput.textContent = currentFrameData.scrambled;
+            this.hiddenOutput.textContent = currentFrameData.hidden || '';
+        } else {
+            this.scrambledOutput.textContent = '';
+            this.hiddenOutput.textContent = '';
+            document.querySelectorAll('.frame-item').forEach(item => {
+                item.style.borderColor = '#ddd';
+            });
         }
+    }
+
+    initialSetup() {
+        // Create initial frame
+        this.frameManager.createFrameInput(
+            'THISE ISW AJUMBLEF OF LETTERS ANDX WORDS TOD HIDES A MESSAGE.',
+            'THIS IS A HIDDEN MESSAGE. YOU FOUND IT! GREAT JOB DETECTIVE!'
+        );
+        
+        // Initial size setup
+        const initialRect = this.outputContainer.getBoundingClientRect();
+        this.noiseCanvas.width = initialRect.width;
+        this.noiseCanvas.height = initialRect.height;
+        
+        this.uiController.updateStyles();
+        this.updateOutput();
     }
 }
 
+// Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new App();
 });

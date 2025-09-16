@@ -246,14 +246,14 @@ textarea:focus {
     gap: 15px 25px;
 }
 
-.gif-controls {
+.ai-controls, .gif-controls {
     grid-column: span 2;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.gif-controls button {
+.ai-controls button, .gif-controls button {
     padding: 8px 15px;
     border: 1px solid #007bff;
     background-color: #007bff;
@@ -263,19 +263,49 @@ textarea:focus {
     transition: background-color 0.2s;
 }
 
-.gif-controls button:hover {
+.ai-controls button:hover, .gif-controls button:hover {
     background-color: #0056b3;
 }
 
-.gif-controls button:disabled {
+.ai-controls button:disabled, .gif-controls button:disabled {
     background-color: #ccc;
     border-color: #ccc;
     cursor: not-allowed;
 }
 
-#gif-status {
+#ai-status, #gif-status {
     font-size: 0.9em;
     color: #555;
+}
+
+#ai-result-container {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#ai-result-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+#ai-result-container button {
+    padding: 8px 15px;
+    border: 1px solid #28a745;
+    background-color: #28a745;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#ai-result-container button:hover {
+    background-color: #218838;
 }
 
 #output-container {
@@ -286,8 +316,9 @@ textarea:focus {
     border-radius: 4px;
     min-height: 200px;
     user-select: none;
-    background-size: auto;
-    background-repeat: repeat;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     transition: background-color 0.2s ease;
     overflow: hidden;
 }
@@ -324,49 +355,4 @@ textarea:focus {
 #output-hidden {
     color: #00ffff; /* Cyan */
     mix-blend-mode: darken;
-}
-
-.media-input-group {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.upload-btn, .clear-media-btn {
-    padding: 6px 12px;
-    border: 1px solid #007bff;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: background-color 0.2s;
-}
-
-.upload-btn:hover, .clear-media-btn:hover {
-    background-color: #0056b3;
-}
-
-.clear-media-btn {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.clear-media-btn:hover {
-    background-color: #c82333;
-}
-
-.media-preview {
-    max-width: 200px;
-    max-height: 150px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.media-preview img, .media-preview video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
