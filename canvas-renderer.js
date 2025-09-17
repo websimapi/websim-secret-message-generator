@@ -61,27 +61,57 @@ export class CanvasRenderer {
         ctx.letterSpacing = baseStyles.letterSpacing;
         ctx.textBaseline = 'top';
 
-        // Function to draw multiline text
-        const drawText = (text, startX, startY) => {
-            const lines = text.split('\n');
+        // Function to draw multiline text, now with wrapping
+        const drawText = (text, startX, startY, maxWidth) => {
+            const initialLines = text.split('\n');
+            const allLines = [];
+            const availableWidth = maxWidth - startX - x; // x is padding, so available width is total width minus left and right padding.
+
+            for (const line of initialLines) {
+                if (ctx.measureText(line).width <= availableWidth) {
+                    allLines.push(line);
+                } else {
+                    let currentLine = '';
+                    const words = line.split(' ');
+                    for (let i = 0; i < words.length; i++) {
+                        const word = words[i];
+                        // Don't add a space for the first word on a new line
+                        const testLine = currentLine.length > 0 ? currentLine + ' ' + word : word;
+                        
+                        if (ctx.measureText(testLine).width > availableWidth) {
+                            if (currentLine.length > 0) { // Push the line before it got too long
+                                allLines.push(currentLine);
+                            }
+                            currentLine = word; // Start a new line with the current word
+                        } else {
+                            currentLine = testLine;
+                        }
+                    }
+                    if (currentLine.length > 0) {
+                        allLines.push(currentLine); // Push the last line
+                    }
+                }
+            }
+            
             const fontSize = parseFloat(baseStyles.fontSize);
             const lineHeight = parseFloat(this.controls.lineHeight.value);
             const lineSpacing = lineHeight * fontSize;
-            for (let i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], startX, startY + (i * lineSpacing));
+
+            for (let i = 0; i < allLines.length; i++) {
+                ctx.fillText(allLines[i], startX, startY + (i * lineSpacing));
             }
         };
 
         // Draw Scrambled Text
         ctx.globalCompositeOperation = this.controls.scrambledBlendMode.value;
         ctx.fillStyle = this.controls.scrambledColor.value;
-        drawText(frameData.scrambled, x, y);
+        drawText(frameData.scrambled, x, y, width);
 
         // Draw Hidden Text
         ctx.globalCompositeOperation = this.controls.hiddenBlendMode.value;
         ctx.fillStyle = this.controls.hiddenColor.value;
         const offsetX = parseInt(this.controls.hiddenOffsetX.value, 10);
         const offsetY = parseInt(this.controls.hiddenOffsetY.value, 10);
-        drawText(frameData.hidden, x + offsetX, y + offsetY);
+        drawText(frameData.hidden, x + offsetX, y + offsetY, width);
     }
 }
