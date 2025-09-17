@@ -33,27 +33,44 @@ export class AnimationController {
 
         frames.forEach((frame, index) => {
             if (frame.dialogueMode) {
-                const maxLen = Math.max(frame.scrambled.length, frame.hidden.length);
-                if (maxLen === 0) {
+                const scrambledLines = frame.scrambled.split('\n');
+                const hiddenLines = frame.hidden.split('\n');
+                
+                const maxLineCount = Math.max(scrambledLines.length, hiddenLines.length);
+                const charCounts = Array(maxLineCount).fill(0).map((_, i) => 
+                    Math.max(
+                        (scrambledLines[i] || '').length, 
+                        (hiddenLines[i] || '').length
+                    )
+                );
+                const totalChars = charCounts.reduce((sum, count) => sum + count, 0);
+
+                if (totalChars === 0) {
                      queue.push({
                         type: 'dialogue',
                         frameData: { scrambled: '', hidden: '' },
                         originalFrameIndex: index,
-                        charCount: 0,
                         delay: dialogueDelay
                     });
                 } else {
-                    for (let i = 1; i <= maxLen; i++) {
-                        queue.push({
-                            type: 'dialogue',
-                            frameData: {
-                                scrambled: frame.scrambled.substring(0, i),
-                                hidden: frame.hidden.substring(0, i)
-                            },
-                            originalFrameIndex: index,
-                            charCount: i,
-                            delay: dialogueDelay
-                        });
+                    let currentScrambledLines = Array(maxLineCount).fill('');
+                    let currentHiddenLines = Array(maxLineCount).fill('');
+
+                    for (let lineIndex = 0; lineIndex < maxLineCount; lineIndex++) {
+                        for (let charIndex = 1; charIndex <= charCounts[lineIndex]; charIndex++) {
+                            currentScrambledLines[lineIndex] = (scrambledLines[lineIndex] || '').substring(0, charIndex);
+                            currentHiddenLines[lineIndex] = (hiddenLines[lineIndex] || '').substring(0, charIndex);
+                            
+                             queue.push({
+                                type: 'dialogue',
+                                frameData: {
+                                    scrambled: currentScrambledLines.join('\n'),
+                                    hidden: currentHiddenLines.join('\n')
+                                },
+                                originalFrameIndex: index,
+                                delay: dialogueDelay
+                            });
+                        }
                     }
                 }
             } else {

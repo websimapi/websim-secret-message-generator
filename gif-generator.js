@@ -88,30 +88,46 @@ export class GifGenerator {
 
         for (const frameData of framesData) {
             if (frameData.dialogueMode) {
-                const scrambledText = frameData.scrambled;
-                const hiddenText = frameData.hidden;
-                const maxLen = Math.max(scrambledText.length, hiddenText.length);
+                const scrambledLines = frameData.scrambled.split('\n');
+                const hiddenLines = frameData.hidden.split('\n');
+                const maxLineCount = Math.max(scrambledLines.length, hiddenLines.length);
+                 const charCounts = Array(maxLineCount).fill(0).map((_, i) => 
+                    Math.max(
+                        (scrambledLines[i] || '').length, 
+                        (hiddenLines[i] || '').length
+                    )
+                );
+                const totalChars = charCounts.reduce((sum, count) => sum + count, 0);
                 
-                if (maxLen === 0) { // Render one blank frame if no text
+                if (totalChars === 0) { // Render one blank frame if no text
                      const frameCtx = await this.canvasRenderer.captureFrame({ scrambled: '', hidden: '' }, false);
                      gif.addFrame(frameCtx.canvas, { delay: dialogueDelay, copy: true });
                      renderedFramesCount++;
                      this.statusEl.textContent = `Rendering frame ${renderedFramesCount}/${totalFramesToRender}...`;
                      continue;
                 }
+                
+                let currentScrambledLines = Array(maxLineCount).fill('');
+                let currentHiddenLines = Array(maxLineCount).fill('');
 
-                for (let i = 1; i <= maxLen; i++) {
-                    renderedFramesCount++;
-                    this.statusEl.textContent = `Rendering dialogue frame ${renderedFramesCount}/${totalFramesToRender}...`;
-                    
-                    const subFrameData = {
-                        scrambled: scrambledText.substring(0, i),
-                        hidden: hiddenText.substring(0, i)
-                    };
-                    
-                    const frameCtx = await this.canvasRenderer.captureFrame(subFrameData, false);
-                    gif.addFrame(frameCtx.canvas, { delay: dialogueDelay, copy: true });
+                for (let lineIndex = 0; lineIndex < maxLineCount; lineIndex++) {
+                    for (let charIndex = 1; charIndex <= charCounts[lineIndex]; charIndex++) {
+                        renderedFramesCount++;
+                        this.statusEl.textContent = `Rendering dialogue frame ${renderedFramesCount}/${totalFramesToRender}...`;
+                        
+                        currentScrambledLines[lineIndex] = (scrambledLines[lineIndex] || '').substring(0, charIndex);
+                        currentHiddenLines[lineIndex] = (hiddenLines[lineIndex] || '').substring(0, charIndex);
+                        
+                        const subFrameData = {
+                            scrambled: currentScrambledLines.join('\n'),
+                            hidden: currentHiddenLines.join('\n')
+                        };
+                        
+                        const frameCtx = await this.canvasRenderer.captureFrame(subFrameData, false);
+                        gif.addFrame(frameCtx.canvas, { delay: dialogueDelay, copy: true });
+                    }
                 }
+
             } else {
                 renderedFramesCount++;
                 this.statusEl.textContent = `Rendering frame ${renderedFramesCount}/${totalFramesToRender}...`;
