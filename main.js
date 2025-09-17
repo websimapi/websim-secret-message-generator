@@ -51,6 +51,7 @@ class App {
             noiseType: document.getElementById('noise-type'),
             noiseScale: document.getElementById('noise-scale'),
             gifFps: document.getElementById('gif-fps'),
+            dialogueFps: document.getElementById('dialogue-fps'),
             aiPreservePercentage: document.getElementById('ai-preserve-percentage-value'),
         };
 
@@ -64,6 +65,7 @@ class App {
             noiseOpacity: document.getElementById('noise-opacity-value'),
             noiseScale: document.getElementById('noise-scale-value'),
             gifFps: document.getElementById('gif-fps-value'),
+            dialogueFps: document.getElementById('dialogue-fps-value'),
         };
     }
 
@@ -79,9 +81,10 @@ class App {
 
         this.animationController = new AnimationController(
             this.frameManager, 
-            (frameIndex) => this.updateOutput(frameIndex),
+            (state) => this.updateOutput(state),
             this.playPauseBtn,
-            this.controls.gifFps
+            this.controls.gifFps,
+            this.controls.dialogueFps
         );
 
         this.canvasRenderer = new CanvasRenderer(this.outputContainer, this.noiseCanvas, this.controls);
@@ -143,31 +146,44 @@ class App {
         resizeObserver.observe(this.outputContainer);
     }
 
-    updateOutput(frameIndex = null) {
+    updateOutput(renderState = null) {
+        // Handle live animation state
+        if (renderState && renderState.type) {
+            if (renderState.type === 'reset') {
+                // Reset to show the first full frame statically
+                const frames = this.frameManager.getFramesData();
+                if (frames.length > 0) {
+                    this.scrambledOutput.textContent = frames[0].scrambled;
+                    this.hiddenOutput.textContent = frames[0].hidden;
+                } else {
+                    this.scrambledOutput.textContent = '';
+                    this.hiddenOutput.textContent = '';
+                }
+                document.querySelectorAll('.frame-item').forEach(item => item.style.borderColor = '#ddd');
+                return;
+            }
+
+            // Update text content from render state
+            this.scrambledOutput.textContent = renderState.frameData.scrambled;
+            this.hiddenOutput.textContent = renderState.frameData.hidden;
+            
+            // Highlight the corresponding source frame
+            document.querySelectorAll('.frame-item').forEach((item, index) => {
+                item.style.borderColor = index === renderState.originalFrameIndex ? '#007bff' : '#ddd';
+            });
+            return;
+        }
+
+        // Handle static view (when not playing)
         const frames = this.frameManager.getFramesData();
         if (frames.length > 0) {
-            const currentFrameIndex = frameIndex !== null ? frameIndex : this.animationController.getCurrentFrame();
-            const actualFrameIndex = currentFrameIndex % frames.length;
-            const currentFrameData = frames[actualFrameIndex];
-            
-            // Highlight the current frame in the UI
-            document.querySelectorAll('.frame-item').forEach((item, index) => {
-                if (this.animationController.isPlaying()) {
-                    item.style.borderColor = index === actualFrameIndex ? '#007bff' : '#ddd';
-                } else {
-                    item.style.borderColor = '#ddd';
-                }
-            });
-
-            this.scrambledOutput.textContent = currentFrameData.scrambled;
-            this.hiddenOutput.textContent = currentFrameData.hidden || '';
+            this.scrambledOutput.textContent = frames[0].scrambled;
+            this.hiddenOutput.textContent = frames[0].hidden;
         } else {
             this.scrambledOutput.textContent = '';
             this.hiddenOutput.textContent = '';
-            document.querySelectorAll('.frame-item').forEach(item => {
-                item.style.borderColor = '#ddd';
-            });
         }
+        document.querySelectorAll('.frame-item').forEach(item => item.style.borderColor = '#ddd');
     }
 
     initialSetup() {

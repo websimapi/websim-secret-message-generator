@@ -108,6 +108,7 @@ export class UIController {
         this.valueDisplays.noiseOpacity.textContent = this.controls.noiseOpacity.value;
         this.valueDisplays.noiseScale.textContent = this.controls.noiseScale.value;
         this.valueDisplays.gifFps.textContent = this.controls.gifFps.value;
+        this.valueDisplays.dialogueFps.textContent = this.controls.dialogueFps.value;
 
         // AI preserve percentage
         if (this.valueDisplays.aiPreservePercentage) {

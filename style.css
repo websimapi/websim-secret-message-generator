@@ -265,7 +265,14 @@ textarea:focus {
     gap: 15px 25px;
 }
 
-.ai-controls, .gif-controls {
+.gif-controls {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-controls {
     grid-column: span 2;
     display: flex;
     align-items: center;

@@ -61,6 +61,8 @@ export class GifGenerator {
         const { width, height } = this.canvasRenderer.outputContainer.getBoundingClientRect();
         const fps = parseInt(this.controls.gifFps.value, 10);
         const delay = 1000 / fps;
+        const dialogueFps = parseInt(this.controls.dialogueFps.value, 10);
+        const dialogueDelay = 1000 / dialogueFps;
 
         const workerUrl = URL.createObjectURL(gifWorkerBlob);
 
@@ -92,7 +94,7 @@ export class GifGenerator {
                 
                 if (maxLen === 0) { // Render one blank frame if no text
                      const frameCtx = await this.canvasRenderer.captureFrame({ scrambled: '', hidden: '' }, false);
-                     gif.addFrame(frameCtx.canvas, { delay, copy: true });
+                     gif.addFrame(frameCtx.canvas, { delay: dialogueDelay, copy: true });
                      renderedFramesCount++;
                      this.statusEl.textContent = `Rendering frame ${renderedFramesCount}/${totalFramesToRender}...`;
                      continue;
@@ -108,7 +110,7 @@ export class GifGenerator {
                     };
                     
                     const frameCtx = await this.canvasRenderer.captureFrame(subFrameData, false);
-                    gif.addFrame(frameCtx.canvas, { delay, copy: true });
+                    gif.addFrame(frameCtx.canvas, { delay: dialogueDelay, copy: true });
                 }
             } else {
                 renderedFramesCount++;
