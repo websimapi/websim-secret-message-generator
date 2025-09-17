@@ -36,8 +36,8 @@ export class GifGenerator {
     }
 
     async generate(animationController) {
-        const frames = this.frameManager.getFramesData();
-        if (frames.length === 0) {
+        const framesData = this.frameManager.getFramesData();
+        if (framesData.length === 0) {
             this.statusEl.textContent = 'Add at least one frame.';
             return;
         }
@@ -72,10 +72,50 @@ export class GifGenerator {
             workerScript: workerUrl
         });
 
-        for (let i = 0; i < frames.length; i++) {
-            this.statusEl.textContent = `Rendering frame ${i + 1}/${frames.length}...`;
-            const frameCtx = await this.canvasRenderer.captureFrame(frames[i], false);
-            gif.addFrame(frameCtx.canvas, { delay: delay, copy: true });
+        // Pre-calculate total frames for accurate progress updates
+        let totalFramesToRender = 0;
+        framesData.forEach(frame => {
+            if (frame.dialogueMode) {
+                totalFramesToRender += Math.max(frame.scrambled.length, frame.hidden.length) || 1;
+            } else {
+                totalFramesToRender++;
+            }
+        });
+
+        let renderedFramesCount = 0;
+
+        for (const frameData of framesData) {
+            if (frameData.dialogueMode) {
+                const scrambledText = frameData.scrambled;
+                const hiddenText = frameData.hidden;
+                const maxLen = Math.max(scrambledText.length, hiddenText.length);
+                
+                if (maxLen === 0) { // Render one blank frame if no text
+                     const frameCtx = await this.canvasRenderer.captureFrame({ scrambled: '', hidden: '' }, false);
+                     gif.addFrame(frameCtx.canvas, { delay, copy: true });
+                     renderedFramesCount++;
+                     this.statusEl.textContent = `Rendering frame ${renderedFramesCount}/${totalFramesToRender}...`;
+                     continue;
+                }
+
+                for (let i = 1; i <= maxLen; i++) {
+                    renderedFramesCount++;
+                    this.statusEl.textContent = `Rendering dialogue frame ${renderedFramesCount}/${totalFramesToRender}...`;
+                    
+                    const subFrameData = {
+                        scrambled: scrambledText.substring(0, i),
+                        hidden: hiddenText.substring(0, i)
+                    };
+                    
+                    const frameCtx = await this.canvasRenderer.captureFrame(subFrameData, false);
+                    gif.addFrame(frameCtx.canvas, { delay, copy: true });
+                }
+            } else {
+                renderedFramesCount++;
+                this.statusEl.textContent = `Rendering frame ${renderedFramesCount}/${totalFramesToRender}...`;
+                const frameCtx = await this.canvasRenderer.captureFrame(frameData, false);
+                gif.addFrame(frameCtx.canvas, { delay, copy: true });
+            }
         }
 
         gif.on('finished', (blob) => {
@@ -100,7 +140,7 @@ export class GifGenerator {
             this.statusEl.textContent = `Building GIF... ${Math.round(p * 100)}%`;
         });
 
+        this.statusEl.textContent = `Building GIF... 0%`;
         gif.render();
     }
 }
-

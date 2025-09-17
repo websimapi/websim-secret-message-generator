@@ -10,9 +10,11 @@ export class FrameManager {
         return Array.from(this.framesList.querySelectorAll('.frame-item')).map(item => {
             const scrambledInput = item.querySelector('.scrambled-input');
             const hiddenInput = item.querySelector('.hidden-input');
+            const dialogueCheckbox = item.querySelector('.dialogue-mode-checkbox');
             return {
                 scrambled: scrambledInput ? scrambledInput.value : '',
-                hidden: hiddenInput ? hiddenInput.value : ''
+                hidden: hiddenInput ? hiddenInput.value : '',
+                dialogueMode: dialogueCheckbox ? dialogueCheckbox.checked : false,
             };
         });
     }
@@ -37,6 +39,18 @@ export class FrameManager {
         const title = document.createElement('h4');
         // Title will be set by updateFrameNumbers
 
+        const dialogueToggleContainer = document.createElement('div');
+        dialogueToggleContainer.className = 'dialogue-mode-toggle';
+        dialogueToggleContainer.title = 'Enable to animate text letter-by-letter in the GIF.';
+        const dialogueLabel = document.createElement('span');
+        dialogueLabel.textContent = 'Dialogue Mode';
+        const dialogueCheckbox = document.createElement('input');
+        dialogueCheckbox.type = 'checkbox';
+        dialogueCheckbox.className = 'dialogue-mode-checkbox';
+
+        dialogueToggleContainer.appendChild(dialogueLabel);
+        dialogueToggleContainer.appendChild(dialogueCheckbox);
+
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-frame-btn';
         removeBtn.textContent = 'Remove';
@@ -47,6 +61,7 @@ export class FrameManager {
         });
         
         header.appendChild(title);
+        header.appendChild(dialogueToggleContainer);
         header.appendChild(removeBtn);
 
         const inputsDiv = document.createElement('div');
