@@ -258,6 +258,11 @@ textarea:focus {
     margin-bottom: 5px;
 }
 
+.font-upload-input {
+    max-width: 200px;
+    font-size: 0.9em;
+}
+
 .fieldset-span-2 {
     grid-column: span 2;
     display: grid;
