@@ -42,6 +42,7 @@ class App {
             hiddenBlendMode: document.getElementById('hidden-blend-mode'),
             hiddenOffsetX: document.getElementById('hidden-offset-x'),
             hiddenOffsetY: document.getElementById('hidden-offset-y'),
+            fontFamily: document.getElementById('font-family'),
             fontSize: document.getElementById('font-size'),
             fontWeight: document.getElementById('font-weight'),
             letterSpacing: document.getElementById('letter-spacing'),

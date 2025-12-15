@@ -69,12 +69,14 @@ export class UIController {
         this.hiddenOutput.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         
         // General Text
+        const fontFamily = this.controls.fontFamily.value;
         const fontSize = this.controls.fontSize.value;
         const fontWeight = this.controls.fontWeight.value;
         const letterSpacing = this.controls.letterSpacing.value;
         const lineHeight = this.controls.lineHeight.value;
         
         const sharedTextStyle = `
+            font-family: ${fontFamily};
             font-size: ${fontSize}px;
             font-weight: ${fontWeight};
             letter-spacing: ${letterSpacing}px;
